@@ -1,57 +1,49 @@
 <!DOCTYPE html>
-<html lang='en'>
-  <head>
+<html>
+<head>
     <meta charset='utf-8' />
-    <!-- Load FullCalendar v6 Global Bundle (Includes Core and Plugins) -->
-    <script src='https://cdn.jsdelivr.net'></script>
-    <!-- Load the Google Calendar Plugin -->
-    <script src='https://cdn.jsdelivr.net'></script>
+    <!-- 1. Load the Core Library first -->
+    <script src="https://cdnjs.cloudflare.com"></script>
+    <!-- 2. Load the Google Plugin second -->
+    <script src="https://cdnjs.cloudflare.com"></script>
     
     <style>
-      body {
-        margin: 0;
-        padding: 10px;
-        font-family: Arial, Helvetica, sans-serif;
-        background-color: #ffffff;
-      }
-      #calendar {
-        max-width: 100%;
-        margin: 0 auto;
-      }
-      /* Customize the Year View Appearance */
-      .fc { font-size: 0.7em; color: #333; }
-      .fc-multimonth-title { font-weight: bold; border-bottom: 1px solid #eee; }
-      .fc-event { border-radius: 3px; padding: 2px; font-size: 0.85em; }
+        body { margin: 0; padding: 10px; font-family: sans-serif; background: white; }
+        #calendar { max-width: 100%; margin: 0 auto; height: 98vh; }
+        .fc { font-size: 0.65em; color: #333; }
+        .fc-multimonth-title { font-weight: bold; border-bottom: 1px solid #eee; }
     </style>
-  </head>
-  <body>
+</head>
+<body>
+    <div id='calendar-status' style="text-align:center; padding:20px;">Checking Library...</div>
     <div id='calendar'></div>
 
     <script>
-      document.addEventListener('DOMContentLoaded', function() {
-        var calendarEl = document.getElementById('calendar');
+        function initCalendar() {
+            var statusEl = document.getElementById('calendar-status');
+            
+            // Safety Check: Verify the library actually loaded
+            if (typeof FullCalendar !== 'undefined') {
+                statusEl.style.display = 'none';
+                var calendarEl = document.getElementById('calendar');
+                var calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'multiMonthYear',
+                    multiMonthMaxColumns: 3,
+                    googleCalendarApiKey: 'AIzaSyD1icSp6SOC9A0yIsy0rGk0mr1B60sW2Zo', // <-- REPLACE THIS
+                    events: {
+                        googleCalendarId: 'eventsatcrossroads@gmail.com'   // <-- REPLACE THIS
+                    },
+                    headerToolbar: { left: '', center: 'title', right: '' },
+                    height: 'auto'
+                });
+                calendar.render();
+            } else {
+                statusEl.innerHTML = "Error: FullCalendar Library Blocked by Network.";
+            }
+        }
 
-        var calendar = new FullCalendar.Calendar(calendarEl, {
-          // Set to the 12-month year grid
-          initialView: 'multiMonthYear',
-          multiMonthMaxColumns: 3, // Adjust to 2 for narrow screens
-          
-          // Google Calendar API Integration
-          googleCalendarApiKey: 'AIzaSyD1icSp6SOC9A0yIsy0rGk0mr1B60sW2Zo',
-          events: {
-            googleCalendarId: 'eventsatcrossroads@gmail.com'
-          },
-           
-          headerToolbar: {
-            left: '',
-            center: 'title',
-            right: ''
-          },
-          height: 'auto'
-        });
-
-        calendar.render();
-      });
+        // Wait for all scripts to be ready
+        window.onload = initCalendar;
     </script>
-  </body>
+</body>
 </html>
