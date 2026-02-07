@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang='en'>
+  <head>
+    <meta charset='utf-8' />
+    <!-- Load FullCalendar v6 Global Bundle (Includes Core and Plugins) -->
+    <script src='https://cdn.jsdelivr.net'></script>
+    <!-- Load the Google Calendar Plugin -->
+    <script src='https://cdn.jsdelivr.net'></script>
+    
+    <style>
+      body {
+        margin: 0;
+        padding: 10px;
+        font-family: Arial, Helvetica, sans-serif;
+        background-color: #ffffff;
+      }
+      #calendar {
+        max-width: 100%;
+        margin: 0 auto;
+      }
+      /* Customize the Year View Appearance */
+      .fc { font-size: 0.7em; color: #333; }
+      .fc-multimonth-title { font-weight: bold; border-bottom: 1px solid #eee; }
+      .fc-event { border-radius: 3px; padding: 2px; font-size: 0.85em; }
+    </style>
+  </head>
+  <body>
+    <div id='calendar'></div>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        var calendarEl = document.getElementById('calendar');
+
+        var calendar = new FullCalendar.Calendar(calendarEl, {
+          // Set to the 12-month year grid
+          initialView: 'multiMonthYear',
+          multiMonthMaxColumns: 3, // Adjust to 2 for narrow screens
+          
+          // Google Calendar API Integration
+          googleCalendarApiKey: 'AIzaSyD1icSp6SOC9A0yIsy0rGk0mr1B60sW2Zo',
+          events: {
+            googleCalendarId: 'eventsatcrossroads@gmail.com'
+          },
+          
+          headerToolbar: {
+            left: '',
+            center: 'title',
+            right: ''
+          },
+          height: 'auto'
+        });
+
+        calendar.render();
+      });
+    </script>
+  </body>
+</html>
