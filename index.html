@@ -10,12 +10,32 @@
     <!-- LINE 12: THE GOOGLE PLUGIN -->
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.15/index.global.min.js"></script>
 
-    <style>
+        <style>
         body { margin: 0; padding: 10px; font-family: sans-serif; background: #ffffff; }
         #calendar { max-width: 100%; margin: 0 auto; height: 98vh; }
+        
+        /* --- VISUAL TWEAKS --- */
         .fc { font-size: 0.6em; color: #333; }
-        .fc-multimonth-title { font-weight: bold; border-bottom: 1px solid #eee; padding: 5px 0; }
+        
+        /* Remove Event Bullets (Dots) to save space */
+        .fc-daygrid-event-dot { display: none !important; }
+        
+        /* Make events look like clean labels */
+        .fc-event { 
+            border: none !important; 
+            background: #3788d8 !important; 
+            color: white !important;
+            padding: 1px 3px !important;
+            margin: 1px 0 !important;
+            border-radius: 2px;
+            font-weight: 500;
+        }
+
+        .fc-multimonth-title { font-weight: bold; border-bottom: 1px solid #eee; padding: 5px 0; font-size: 1.2em; }
         .fc-daygrid-day-number { color: #444; font-weight: 600; }
+
+        /* Style the Year Buttons */
+        .fc-button { font-size: 0.8em !important; padding: 2px 5px !important; }
     </style>
 </head>
 <body>
@@ -34,6 +54,13 @@
                     initialView: 'multiMonthYear',
                     multiMonthMaxColumns: 4, 
                     
+                    // --- NAVIGATION BUTTONS ---
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: ''
+                    },
+
                     // --- CONFIGURATION ---
                     googleCalendarApiKey: 'AIzaSyD1icSp6SOC9A0yIsy0rGk0mr1B60sW2Zo', 
                     events: {
