@@ -28,16 +28,33 @@
             
             if (typeof FullCalendar !== 'undefined') {
                 statusEl.style.display = 'none';
-                var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                    initialView: 'multiMonthYear',
-                    multiMonthMaxColumns: 4, 
-                    googleCalendarApiKey: 'AIzaSyD1icSp6SOC9A0yIsy0rGk0mr1B60sW2Zo',
-                    events: {
-                        googleCalendarId: 'eventsatcrossroads@gmail.com'
-                    },
-                    headerToolbar: { left: '', center: 'title', right: '' },
-                    height: 'auto'
-                });
+
+                var calendar = new FullCalendar.Calendar(calendarEl, {
+    initialView: 'multiMonthYear',
+    multiMonthMaxColumns: 3,
+    googleCalendarApiKey: 'YOUR_API_KEY',
+    events: {
+        googleCalendarId: 'YOUR_CAL_ID'
+    },
+    // 1. Disable the default link behavior
+    eventDisplay: 'block', 
+    
+    // 2. Handle the click with a popup
+    eventClick: function(info) {
+        // Prevent the browser from following the Google Calendar link
+        info.jsEvent.preventDefault(); 
+
+        // Show a simple popup with the event details
+        alert(
+            "Event: " + info.event.title + "\n" +
+            "Start: " + info.event.start.toLocaleString() + "\n" +
+            (info.event.extendedProps.description || "No description provided.")
+        );
+    },
+    
+    headerToolbar: { left: '', center: 'title', right: '' },
+    height: 'auto'
+});
                 calendar.render();
             } else {
                 statusEl.innerHTML = "Error: Library Load Failed. Check CDN URLs.";
