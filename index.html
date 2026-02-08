@@ -2,93 +2,125 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>Yearly Calendar</title>
+    <title>DAKboard Yearly - Slate Chips</title>
     
-    <!-- LINE 9: THE CORE ENGINE -->
+<!-- THE CORE ENGINE -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     
-    <!-- LINE 12: THE GOOGLE PLUGIN -->
+    <!-- THE GOOGLE PLUGIN -->
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.15/index.global.min.js"></script>
 
-        <style>
-        body { margin: 0; padding: 10px; font-family: sans-serif; background: #ffffff; }
+
+    <style>
+        /* --- GLOBAL THEME --- */
+        body { 
+            margin: 0; padding: 10px; font-family: sans-serif; 
+            background: #111111; color: #eeeeee; 
+        }
         #calendar { max-width: 100%; margin: 0 auto; height: 98vh; }
         
-        /* --- VISUAL TWEAKS --- */
-        .fc { font-size: 0.6em; color: #333; }
-        
-        /* Remove Event Bullets (Dots) to save space */
-        .fc-daygrid-event-dot { display: none !important; }
-        
-        /* Make events look like clean labels */
+        /* --- GRID STYLING --- */
+        .fc { font-size: 0.58em; color: #eeeeee; }
+        .fc-theme-standard td, .fc-theme-standard th { background-color: #1a1a1a !important; border: 1px solid #2a2a2a !important; }
+        .fc-multimonth-month { background: #1a1a1a !important; border: 1px solid #333 !important; }
+        .fc-multimonth-title { font-weight: bold; border-bottom: 1px solid #444; color: #ffffff; font-size: 1.4em; padding: 5px 0; }
+        .fc-daygrid-day-number { color: #bbbbbb; padding: 2px 4px !important; }
+        .fc-col-header-cell-cushion { color: #888; text-transform: uppercase; font-size: 0.85em; }
+
+        /* --- EVENT STYLING --- */
+        .fc-daygrid-event-dot { display: none !important; } /* Hide dots */
+
+        /* Standard Timed Events (Text Only) */
         .fc-event { 
-            border: none !important; 
-            background: #3788d8 !important; 
-            color: white !important;
-            padding: 1px 3px !important;
-            margin: 1px 0 !important;
-            border-radius: 2px;
-            font-weight: 500;
+            background: transparent !important; border: none !important; 
+            color: #74b9ff !important; padding: 1px 2px !important; font-weight: 500;
+            cursor: pointer;
         }
 
-        .fc-multimonth-title { font-weight: bold; border-bottom: 1px solid #eee; padding: 5px 0; font-size: 1.2em; }
-        .fc-daygrid-day-number { color: #444; font-weight: 600; }
+        /* Full-Day & Multi-Day Events (Slate Grey Chips) */
+        /* FullCalendar applies the .fc-event-all-day class to these */
+ 	       /* 1. Style the Chip (Background) */
+	.fc-v-event.fc-event-all-day, 
+	.fc-h-event.fc-event-all-day,
+	.fc-daygrid-block-event {
+	    background-color: #444444 !important; /* Slate Grey Background */
+	    border: 1px solid #555555 !important;
+	    border-radius: 3px !important;
+	}
+	
+	/* 2. Force the Internal Text to Dodger Blue */
+	.fc-daygrid-block-event .fc-event-title,
+	.fc-daygrid-block-event .fc-event-main,
+	.fc-v-event.fc-event-all-day .fc-event-title,
+	.fc-h-event.fc-event-all-day .fc-event-title {
+	    color: #ffffff !important; /* Dodger Blue Text */
+	    /* font-weight: bold !important; */
+	    text-shadow: none !important; /* Remove any default shadows */
+	} 
 
-        /* Style the Year Buttons */
-        .fc-button { font-size: 0.8em !important; padding: 2px 5px !important; }
+/* --- MODAL / POPUP --- */
+        #eventModal {
+            display: none; position: fixed; z-index: 999; left: 50%; top: 50%;
+            transform: translate(-50%, -50%); width: 85%; max-width: 400px;
+            background: #222; border: 1px solid #444; color: white;
+            padding: 25px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+        }
+        #modalTitle { margin: 0 0 10px 0; color: #74b9ff; border-bottom: 1px solid #333; padding-bottom: 10px; }
+        #modalClose { 
+            margin-top: 20px; background: #0984e3; border: none; color: white; 
+            padding: 10px 20px; border-radius: 6px; cursor: pointer; float: right; font-weight: bold;
+        }
+        
+        /* --- TOOLBAR --- */
+        .fc-button { background-color: #333 !important; border: 1px solid #444 !important; color: #fff !important; }
+        .fc-toolbar-title { font-size: 1.2em !important; }
     </style>
 </head>
 <body>
     <div id="calendar-status" style="text-align:center; padding:50px;">Syncing Google Calendar...</div>
+    
+    <div id="eventModal">
+        <h3 id="modalTitle"></h3>
+        <div id="modalTime" style="font-weight:bold; margin-bottom:10px; font-size:0.9em; color:#aaa;"></div>
+        <div id="modalDesc" style="font-size:0.95em; color:#ddd; line-height:1.5;"></div>
+        <button id="modalClose" onclick="closeModal()">Close</button>
+    </div>
+
     <div id="calendar"></div>
 
     <script>
+        function closeModal() { document.getElementById('eventModal').style.display = 'none'; }
+
         window.onload = function() {
             var statusEl = document.getElementById('calendar-status');
-
             if (typeof FullCalendar !== 'undefined') {
                 statusEl.style.display = 'none';
-                var calendarEl = document.getElementById('calendar');
                 
-                var calendar = new FullCalendar.Calendar(calendarEl, {
+                var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
                     initialView: 'multiMonthYear',
                     multiMonthMaxColumns: 4, 
+                    headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
                     
-                    // --- NAVIGATION BUTTONS ---
-                    headerToolbar: {
-                        left: 'prev,next today',
-                        center: 'title',
-                        right: ''
-                    },
-
                     // --- CONFIGURATION ---
                     googleCalendarApiKey: 'AIzaSyD1icSp6SOC9A0yIsy0rGk0mr1B60sW2Zo', 
                     events: {
                         googleCalendarId: 'eventsatcrossroads@gmail.com'
                     },
                     
-                    // --- POPUP LOGIC ---
                     eventClick: function(info) {
-                        // Prevent the browser from opening the Google Calendar website
                         info.jsEvent.preventDefault(); 
-
-                        // Simple popup with details
-                        var title = info.event.title;
-                        var start = info.event.start.toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
-                        var desc = info.event.extendedProps.description || "No description provided.";
-                        
-                        alert("Event: " + title + "\nTime: " + start + "\n\n" + desc);
+                        document.getElementById('modalTitle').innerText = info.event.title;
+                        document.getElementById('modalTime').innerText = info.event.allDay 
+                            ? "All Day Event" 
+                            : info.event.start.toLocaleString([], {weekday:'long', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+                        document.getElementById('modalDesc').innerText = info.event.extendedProps.description || "No description provided.";
+                        document.getElementById('eventModal').style.display = 'block';
                     },
-                    
-                    headerToolbar: { left: '', center: 'title', right: '' },
                     height: 'auto'
                 });
-
                 calendar.render();
-            } else {
-                statusEl.innerHTML = "Error: Library could not be reached.";
             }
-        };
+        }
     </script>
 </body>
 </html>
