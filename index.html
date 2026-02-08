@@ -25,39 +25,41 @@
     <script>
         window.onload = function() {
             var statusEl = document.getElementById('calendar-status');
-            
+
             if (typeof FullCalendar !== 'undefined') {
                 statusEl.style.display = 'none';
-
+                var calendarEl = document.getElementById('calendar');
+                
                 var calendar = new FullCalendar.Calendar(calendarEl, {
-    initialView: 'multiMonthYear',
-    multiMonthMaxColumns: 4,
-    googleCalendarApiKey: 'AIzaSyD1icSp6SOC9A0yIsy0rGk0mr1B60sW2Zo',
-    events: {
-        googleCalendarId: 'eventsatcrossroads@gmail.com'
-    },
-    // 1. Disable the default link behavior
-    eventDisplay: 'block', 
-    
-    // 2. Handle the click with a popup
-    eventClick: function(info) {
-        // Prevent the browser from following the Google Calendar link
-        info.jsEvent.preventDefault(); 
+                    initialView: 'multiMonthYear',
+                    multiMonthMaxColumns: 3, 
+                    
+                    // --- CONFIGURATION ---
+                    googleCalendarApiKey: 'AIzaSyD1icSp6SOC9A0yIsy0rGk0mr1B60sW2Zo', 
+                    events: {
+                        googleCalendarId: 'eventsatcrossroads@gmail.com'
+                    },
+                    
+                    // --- POPUP LOGIC ---
+                    eventClick: function(info) {
+                        // Prevent the browser from opening the Google Calendar website
+                        info.jsEvent.preventDefault(); 
 
-        // Show a simple popup with the event details
-        alert(
-            "Event: " + info.event.title + "\n" +
-            "Start: " + info.event.start.toLocaleString() + "\n" +
-            (info.event.extendedProps.description || "No description provided.")
-        );
-    },
-    
-    headerToolbar: { left: '', center: 'title', right: '' },
-    height: 'auto'
-});
+                        // Simple popup with details
+                        var title = info.event.title;
+                        var start = info.event.start.toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+                        var desc = info.event.extendedProps.description || "No description provided.";
+                        
+                        alert("Event: " + title + "\nTime: " + start + "\n\n" + desc);
+                    },
+                    
+                    headerToolbar: { left: '', center: 'title', right: '' },
+                    height: 'auto'
+                });
+
                 calendar.render();
             } else {
-                statusEl.innerHTML = "Error: Library Load Failed. Check CDN URLs.";
+                statusEl.innerHTML = "Error: Library could not be reached.";
             }
         };
     </script>
