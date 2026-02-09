@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>DAKboard Yearly 2026 - Restored Slate Chips</title>
+    <title>DAKboard Yearly 2026 - Final Fixed Details</title>
     <!-- THE CORE ENGINE -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     
@@ -11,86 +11,98 @@
 
 
     <style>
-        /* --- GLOBAL THEME: PURE BLACK --- */
-        body { margin: 0; padding: 10px; font-family: sans-serif; background: #000000; color: #eeeeee; overflow: hidden; }
-        #calendar { max-width: 100%; height: 98vh; }
-        
-        /* --- GRID STYLING --- */
-        .fc { font-size: 0.58em; color: #eee; }
-        .fc-theme-standard td, .fc-theme-standard th { background-color: #000000 !important; border: 1px solid #222 !important; }
-        .fc-multimonth-title { font-size: 2.5em !important; color: #fff; font-weight: bold; padding: 10px 0; border-bottom: 2px solid #333; cursor: pointer; }
-        .fc-toolbar-title { font-size: 2.8em !important; color: #fff; font-weight: bold; }
+        /* --- GLOBAL THEME & GRID --- */
+        body { margin: 0; padding: 10px; font-family: sans-serif; background: #000; color: #eee; overflow: hidden; }
+        #calendar { max-width: 100%; height: 95vh; }
+        .fc { font-size: 0.58em; color: #eee; background: #000; }
+        .fc-theme-standard td, .fc-theme-standard th { background: #000 !important; border: 1px solid #1a1a1a !important; }
 
-        /* --- THE SHIELD (Kills Links) --- */
-        .fc-event { position: relative; cursor: pointer !important; }
-        .fc-event::after { content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 10; background: rgba(0,0,0,0); }
+        /* Shading: In-month (#0d0d0d) vs Out-of-month (Black) */
+        .fc-daygrid-day:not(.fc-day-other) { background: #0d0d0d !important; }
+        .fc-day-other { background: #000 !important; }
 
-        /* --- RESTORED CHIP LOGIC --- */
-        
-        /* 1. Timed Events: Clean Dodger Blue Text (No BG) */
-        .fc-daygrid-event:not(.fc-event-all-day) .fc-event-main,
-        .fc-daygrid-event:not(.fc-event-all-day) .fc-event-title,
-        .fc-daygrid-event:not(.fc-event-all-day) .fc-event-time {
-            color: #1e90ff !important; 
-            background: transparent !important;
+        /* Selective Events: Hide on 'other' days in Year view, show in Month view */
+        .fc-multimonth-daygrid .fc-day-other .fc-daygrid-event { display: none !important; }
+
+        /* --- CHIP LOGIC --- */
+        .fc-daygrid-event { background: transparent !important; border: none !important; cursor: pointer !important; }
+        .fc-h-event, .fc-event-all-day, .fc-daygrid-block-event, .fc-multimonth-daygrid-event {
+            background: #444 !important; border: 1px solid #555 !important; border-radius: 3px !important; display: block !important; padding: 1px 4px !important;
         }
-
-        /* 2. All-Day Chips: Target the Internal Container specifically */
-        /* This fixes the issue where the background was missing in previous versions */
-        .fc-event-all-day, 
-        .fc-daygrid-block-event,
-        .fc-multimonth-daygrid-event {
-            background-color: #444444 !important; /* Slate Grey */
-            border: 1px solid #555555 !important;
-            border-radius: 3px !important;
-            display: block !important;
-        }
-
-        /* 3. Force Dodger Blue text inside ALL event containers */
-        .fc-event-main, .fc-event-title, .fc-event-time {
-            color: #1e90ff !important;
-            font-weight: bold !important;
-        }
-
+        .fc-event-main, .fc-event-title, .fc-event-time { color: #1e90ff !important; font-weight: bold !important; }
         .fc-daygrid-event-dot { display: none !important; }
 
-        /* --- ZOOM OVERLAY & MODAL --- */
-        #zoomOverlay { display: none; position: fixed; z-index: 1000; left: 20%; top: 20%; width: 60%; height: 60vh; background: #000; border: 2px solid #444; border-radius: 15px; box-shadow: 0 0 100px #000; padding: 75px 30px 30px 30px; }
+        /* --- ZOOM VIEW --- */
+        #zoomOverlay { display: none; position: fixed; z-index: 1000; left: 5%; top: 5%; width: 90%; height: 90vh; background: #000; border: 2px solid #444; border-radius: 15px; padding: 75px 30px 30px 30px; box-shadow: 0 0 100px #000; }
         #zoomCalendar { height: 100%; width: 100%; }
-        #closeZoom { position: absolute; top: 15px; right: 20px; background: #444; color: #eee; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; z-index: 1100; font-weight: bold; }
-        #zoomCalendar .fc-daygrid-day-number { font-size: 2.5em !important; color: #fff !important; }
-        #zoomCalendar .fc-col-header-cell-cushion { font-size: 1.8em !important; }
-        #zoomCalendar .fc-event-title { font-size: 1.8em !important; }
-        #zoomCalendar .fc-event-time { font-size: 1.6em !important; margin-right: 5px; }
-        #zoomCalendar .fc-toolbar-title { font-size: 2.5em !important; }
-        #zoomCalendar .fc-button { padding: 8px 15px !important; font-size: 1.2em !important; background: #333 !important; color: #fff !important; }
+        #closeZoom { position: absolute; top: 15px; right: 20px; background: #444; color: #eee; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; z-index: 1100; }
+        
+        /* Zoom Text Scaling */
+        #zoomCalendar .fc-event-title, #zoomCalendar .fc-event-time { font-size: 2.2em !important; }
+        #zoomCalendar .fc-daygrid-day-number { font-size: 2.8em !important; color: #fff !important; }
+        #zoomCalendar .fc-col-header-cell-cushion { font-size: 2em !important; }
+        #zoomCalendar .fc-toolbar-title { font-size: 3em !important; }
 
-        /* Custom Detail Modal */
-        #customModal { display: none; position: fixed; z-index: 2000; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 80%; max-width: 450px; background: #222; border: 1px solid #1e90ff; border-radius: 12px; padding: 25px; box-shadow: 0 0 50px #000; }
-        #mTitle { color: #1e90ff; margin-top: 0; font-size: 1.4em; }
-        #mClose { float: right; background: #444; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 15px; font-weight: bold; }
+        /* --- MODAL POPUP --- */
+        #customModal { display: none; position: fixed; z-index: 3000; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 80%; max-width: 500px; background: #222; border: 2px solid #1e90ff; border-radius: 15px; padding: 30px; box-shadow: 0 0 60px #000; }
+        #mTitle { color: #1e90ff; margin: 0 0 10px 0; font-size: 1.8em; }
+        #mTime { color: #aaa; font-weight: bold; margin-bottom: 20px; font-size: 1.2em; }
+        #mDesc { color: #ddd; line-height: 1.6; font-size: 1.1em; max-height: 300px; overflow-y: auto; }
+        #mClose { float: right; background: #444; color: #fff; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 20px; }
+
+        .fc-multimonth-title { font-size: 2.5em !important; color: #fff; font-weight: bold; padding: 10px 0; cursor: pointer; }
+        #refreshInfo { position: fixed; bottom: 5px; right: 10px; font-size: 0.8em; color: #444; font-weight: bold; }
     </style>
 </head>
 <body>
     <div id="calendar"></div>
-    <div id="zoomOverlay"><button id="closeZoom" onclick="closeZoom()">CLOSE X</button><div id="zoomCalendar"></div></div>
-    <div id="customModal"><h3 id="mTitle"></h3><p id="mTime" style="font-weight:bold; color:#aaa;"></p><p id="mDesc" style="color:#ddd; line-height:1.4;"></p><button id="mClose" onclick="closeModal()">Close</button></div>
+    <div id="refreshInfo">Last Sync: <span id="lastUpdate">--:--</span></div>
+
+    <!-- Details Modal -->
+    <div id="customModal">
+        <h3 id="mTitle"></h3>
+        <p id="mTime"></p>
+        <div id="mDesc"></div>
+        <button id="mClose" onclick="closeModal()">Close</button>
+    </div>
+
+    <!-- Zoom Overlay -->
+    <div id="zoomOverlay">
+        <button id="closeZoom" onclick="closeZoom()">CLOSE X</button>
+        <div id="zoomCalendar"></div>
+    </div>
 
     <script>
         var mainCal, zoomCal;
-         var API_KEY = 'AIzaSyD1icSp6SOC9A0yIsy0rGk0mr1B60sW2Zo';
+        var API_KEY = 'AIzaSyD1icSp6SOC9A0yIsy0rGk0mr1B60sW2Zo';
         var CAL_ID = 'eventsatcrossroads@gmail.com';
 
-        function closeZoom() { document.getElementById('zoomOverlay').style.display = 'none'; }
         function closeModal() { document.getElementById('customModal').style.display = 'none'; }
+        function closeZoom() { document.getElementById('zoomOverlay').style.display = 'none'; }
 
         function showDetails(info) {
+            // STOP 403 ERROR: Prevent the browser from trying to visit the Google link
             if (info.jsEvent) info.jsEvent.preventDefault();
-            document.getElementById('mTitle').innerText = info.event.title;
-            var timeString = info.event.allDay ? "All Day Event" : info.event.start.toLocaleString([], {weekday:'long', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
-            document.getElementById('mTime').innerText = timeString;
-            document.getElementById('mDesc').innerText = info.event.extendedProps.description || "No description provided.";
+            
+            const event = info.event;
+            document.getElementById('mTitle').innerText = event.title;
+            
+            // Format time display
+            const timeStr = event.allDay 
+                ? "All Day Event" 
+                : event.start.toLocaleString([], { weekday: 'long', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            
+            document.getElementById('mTime').innerText = timeStr;
+            
+            // Access non-standard Google fields like description
+            const desc = event.extendedProps.description || "No description provided.";
+            document.getElementById('mDesc').innerHTML = desc.replace(/\n/g, "<br>");
+            
             document.getElementById('customModal').style.display = 'block';
+        }
+
+        function updateSyncStamp() {
+            document.getElementById('lastUpdate').innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
         }
 
         window.onload = function() {
@@ -99,35 +111,40 @@
                 events: { googleCalendarId: CAL_ID },
                 initialView: 'multiMonthYear',
                 multiMonthMaxColumns: 4,
+                showNonCurrentDates: true,
                 headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
-                buttonText: { today: 'Current Year' },
                 height: 'auto',
-                eventClick: showDetails
+                eventClick: showDetails, // Add popup to main view
+                loading: (isLoading) => { if (!isLoading) updateSyncStamp(); }
             });
             mainCal.render();
 
-            document.addEventListener('click', function(e) {
+            setInterval(() => { 
+                mainCal.refetchEvents(); 
+                if (zoomCal) zoomCal.refetchEvents(); 
+            }, 900000);
+
+            document.addEventListener('click', (e) => {
                 if (e.target.classList.contains('fc-multimonth-title')) {
-                    var yearText = mainCal.view.title; 
-                    var monthName = e.target.innerText.split(' ')[0]; 
-                    openZoom(monthName + " 1, " + yearText);
+                    openZoom(e.target.innerText + ", " + mainCal.view.title);
                 }
             });
 
             function openZoom(dateStr) {
                 document.getElementById('zoomOverlay').style.display = 'block';
-                setTimeout(function() {
-                    var zoomEl = document.getElementById('zoomCalendar');
+                setTimeout(() => {
                     if (zoomCal) zoomCal.destroy();
-                    zoomCal = new FullCalendar.Calendar(zoomEl, {
+                    zoomCal = new FullCalendar.Calendar(document.getElementById('zoomCalendar'), {
                         googleCalendarApiKey: API_KEY,
                         eventSources: [{ googleCalendarId: CAL_ID }],
                         initialView: 'dayGridMonth',
                         initialDate: new Date(dateStr),
+                        showNonCurrentDates: true,
+                        fixedWeekCount: false,
                         headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
                         height: 'parent',
-                        eventDisplay: 'block',
-                        eventClick: showDetails
+                        eventDisplay: 'auto',
+                        eventClick: showDetails // Add popup to zoom view
                     });
                     zoomCal.render();
                     window.dispatchEvent(new Event('resize'));
