@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>DAKboard Yearly 2026 - Final Fixed Details</title>
-    <!-- THE CORE ENGINE -->
+    <title>DAKboard Yearly 2026 - Animated & Coordinated</title>
+     <!-- THE CORE ENGINE -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     
     <!-- THE GOOGLE PLUGIN -->
@@ -11,7 +11,7 @@
 
 
     <style>
-        /* --- GLOBAL THEME & GRID --- */
+        /* --- GLOBAL THEME --- */
         body { margin: 0; padding: 10px; font-family: sans-serif; background: #000; color: #eee; overflow: hidden; }
         #calendar { max-width: 100%; height: 95vh; }
         .fc { font-size: 0.58em; color: #eee; background: #000; }
@@ -32,8 +32,14 @@
         .fc-event-main, .fc-event-title, .fc-event-time { color: #1e90ff !important; font-weight: bold !important; }
         .fc-daygrid-event-dot { display: none !important; }
 
-        /* --- ZOOM VIEW --- */
-        #zoomOverlay { display: none; position: fixed; z-index: 1000; left: 5%; top: 5%; width: 90%; height: 90vh; background: #000; border: 2px solid #444; border-radius: 15px; padding: 75px 30px 30px 30px; box-shadow: 0 0 100px #000; }
+        /* --- ANIMATED OVERLAYS --- */
+        .fade-overlay { 
+            display: none; opacity: 0; position: fixed; transition: opacity 0.3s ease-in-out; 
+            background: rgba(0,0,0,0.85); backdrop-filter: blur(5px);
+        }
+        .fade-overlay.show { display: block; opacity: 1; }
+
+        #zoomOverlay { z-index: 1000; left: 5%; top: 5%; width: 90%; height: 90vh; border: 2px solid #444; border-radius: 15px; padding: 75px 30px 30px 30px; box-shadow: 0 0 100px #000; }
         #zoomCalendar { height: 100%; width: 100%; }
         #closeZoom { position: absolute; top: 15px; right: 20px; background: #444; color: #eee; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; z-index: 1100; }
         
@@ -43,8 +49,15 @@
         #zoomCalendar .fc-col-header-cell-cushion { font-size: 2em !important; }
         #zoomCalendar .fc-toolbar-title { font-size: 3em !important; }
 
-        /* --- MODAL POPUP --- */
-        #customModal { display: none; position: fixed; z-index: 3000; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 80%; max-width: 500px; background: #222; border: 2px solid #1e90ff; border-radius: 15px; padding: 30px; box-shadow: 0 0 60px #000; }
+        /* --- ANIMATED MODAL --- */
+        #customModal { 
+            display: none; opacity: 0; position: fixed; z-index: 3000; left: 50%; top: 50%; 
+            transform: translate(-50%, -50%) scale(0.9); transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); 
+            width: 80%; max-width: 500px; background: #222; border: 2px solid #1e90ff; 
+            border-radius: 15px; padding: 30px; box-shadow: 0 0 60px #000; 
+        }
+        #customModal.show { display: block; opacity: 1; transform: translate(-50%, -50%) scale(1); }
+
         #mTitle { color: #1e90ff; margin: 0 0 10px 0; font-size: 1.8em; }
         #mTime { color: #aaa; font-weight: bold; margin-bottom: 20px; font-size: 1.2em; }
         #mDesc { color: #ddd; line-height: 1.6; font-size: 1.1em; max-height: 300px; overflow-y: auto; }
@@ -67,7 +80,7 @@
     </div>
 
     <!-- Zoom Overlay -->
-    <div id="zoomOverlay">
+    <div id="zoomOverlay" class="fade-overlay">
         <button id="closeZoom" onclick="closeZoom()">CLOSE X</button>
         <div id="zoomCalendar"></div>
     </div>
@@ -77,28 +90,30 @@
         var API_KEY = 'AIzaSyD1icSp6SOC9A0yIsy0rGk0mr1B60sW2Zo';
         var CAL_ID = 'eventsatcrossroads@gmail.com';
 
-        function closeModal() { document.getElementById('customModal').style.display = 'none'; }
-        function closeZoom() { document.getElementById('zoomOverlay').style.display = 'none'; }
+        // Animated Helpers
+        function showEl(id) {
+            const el = document.getElementById(id);
+            el.style.display = 'block';
+            setTimeout(() => el.classList.add('show'), 10);
+        }
+        function hideEl(id) {
+            const el = document.getElementById(id);
+            el.classList.remove('show');
+            setTimeout(() => el.style.display = 'none', 300);
+        }
+
+        function closeModal() { hideEl('customModal'); }
+        function closeZoom() { hideEl('zoomOverlay'); }
 
         function showDetails(info) {
-            // STOP 403 ERROR: Prevent the browser from trying to visit the Google link
             if (info.jsEvent) info.jsEvent.preventDefault();
-            
             const event = info.event;
             document.getElementById('mTitle').innerText = event.title;
-            
-            // Format time display
-            const timeStr = event.allDay 
-                ? "All Day Event" 
-                : event.start.toLocaleString([], { weekday: 'long', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
-            
+            const timeStr = event.allDay ? "All Day Event" : event.start.toLocaleString([], { weekday: 'long', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
             document.getElementById('mTime').innerText = timeStr;
-            
-            // Access non-standard Google fields like description
             const desc = event.extendedProps.description || "No description provided.";
             document.getElementById('mDesc').innerHTML = desc.replace(/\n/g, "<br>");
-            
-            document.getElementById('customModal').style.display = 'block';
+            showEl('customModal');
         }
 
         function updateSyncStamp() {
@@ -114,7 +129,7 @@
                 showNonCurrentDates: true,
                 headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
                 height: 'auto',
-                eventClick: showDetails, // Add popup to main view
+                eventClick: showDetails,
                 loading: (isLoading) => { if (!isLoading) updateSyncStamp(); }
             });
             mainCal.render();
@@ -126,15 +141,18 @@
 
             document.addEventListener('click', (e) => {
                 if (e.target.classList.contains('fc-multimonth-title')) {
-                    openZoom(e.target.innerText + ", " + mainCal.view.title);
+                    const yearText = mainCal.view.title; 
+                    const monthPart = e.target.innerText.split('\n')[0];
+                    openZoom(monthPart + " 1, " + yearText);
                 }
             });
 
             function openZoom(dateStr) {
-                document.getElementById('zoomOverlay').style.display = 'block';
+                showEl('zoomOverlay');
                 setTimeout(() => {
+                    const zoomEl = document.getElementById('zoomCalendar');
                     if (zoomCal) zoomCal.destroy();
-                    zoomCal = new FullCalendar.Calendar(document.getElementById('zoomCalendar'), {
+                    zoomCal = new FullCalendar.Calendar(zoomEl, {
                         googleCalendarApiKey: API_KEY,
                         eventSources: [{ googleCalendarId: CAL_ID }],
                         initialView: 'dayGridMonth',
@@ -144,7 +162,7 @@
                         headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
                         height: 'parent',
                         eventDisplay: 'auto',
-                        eventClick: showDetails // Add popup to zoom view
+                        eventClick: showDetails
                     });
                     zoomCal.render();
                     window.dispatchEvent(new Event('resize'));
