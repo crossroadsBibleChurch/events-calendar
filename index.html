@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>DAKboard Yearly Zoom Dark</title>
+    <title>DAKboard Yearly Final - Stable Build</title>
     
     <!-- THE CORE ENGINE -->
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
@@ -12,70 +12,119 @@
 
 
     <style>
-        /* --- GLOBAL DARK THEME --- */
+        /* --- GLOBAL THEME --- */
         body { 
             margin: 0; padding: 10px; font-family: sans-serif; 
             background: #111111; color: #eeeeee; overflow: hidden;
         }
         #calendar { max-width: 100%; margin: 0 auto; height: 98vh; }
         
-        /* --- TITLES & SIZING --- */
-        .fc-toolbar-title { font-size: 2.4em !important; color: #ffffff; font-weight: bold; }
-        .fc-multimonth-title { 
-            font-size: 2.0em !important; color: #ffffff; font-weight: bold; 
-            padding: 10px 0; border-bottom: 2px solid #333; cursor: pointer; 
-        }
-        .fc-multimonth-title:hover { color: #1e90ff; }
-
-        /* --- GRID STYLING --- */
+        /* --- YEAR GRID STYLING --- */
         .fc { font-size: 0.58em; color: #eeeeee; }
         .fc-theme-standard td, .fc-theme-standard th { background-color: #1a1a1a !important; border: 1px solid #2a2a2a !important; }
+        .fc-multimonth-title { 
+            font-size: 2.5em !important; color: #ffffff; font-weight: bold; 
+            padding: 10px 0; border-bottom: 2px solid #333; cursor: pointer; 
+        }
+        .fc-toolbar-title { font-size: 2.8em !important; color: #ffffff; font-weight: bold; }
         .fc-daygrid-day-number { color: #bbbbbb; font-weight: 600; }
-        .fc-col-header-cell-cushion { color: #888; text-transform: uppercase; }
+        .fc-col-header-cell-cushion { color: #888888; text-transform: uppercase; }
 
-        /* --- EVENT STYLING --- */
+        /* --- EVENT SHIELD (Kills Google Links) --- */
+        .fc-event { position: relative; cursor: pointer !important; }
+        .fc-event::after { 
+            content: ""; position: absolute; top: 0; left: 0; width: 100%; height: 100%; 
+            z-index: 10; background: rgba(0,0,0,0); 
+        }
+
+        /* --- EVENT STYLING: CHIPS & TEXT --- */
+        /* Timed Events (Text Only) */
+        .fc-daygrid-event { background: transparent !important; border: none !important; color: #1e90ff !important; font-weight: 500; }
         .fc-daygrid-event-dot { display: none !important; }
-        .fc-event { background: transparent !important; border: none !important; color: #1e90ff !important; font-weight: 500; cursor: pointer; }
-        .fc-daygrid-block-event { background-color: #444444 !important; border: 1px solid #555 !important; border-radius: 3px !important; }
-        .fc-daygrid-block-event .fc-event-title { color: #1e90ff !important; font-weight: bold !important; }
+
+        /* All-Day & Multi-Day Events (Slate Chips) */
+        .fc-daygrid-block-event, .fc-v-event.fc-event-all-day, .fc-h-event.fc-event-all-day {
+            background-color: #444444 !important; /* Slate Grey */
+            border: 1px solid #555555 !important;
+            border-radius: 3px !important;
+            padding: 1px 3px !important;
+        }
+        /* Force Dodger Blue text inside Slate Chips */
+        .fc-daygrid-block-event .fc-event-title, .fc-daygrid-block-event .fc-event-time {
+            color: #1e90ff !important;
+            font-weight: bold !important;
+        }
 
         /* --- ZOOM OVERLAY --- */
         #zoomOverlay {
-            display: none; position: fixed; z-index: 1000; left: 10%; top: 10%; 
-            width: 80%; height: 80vh; background: #1a1a1a; border: 3px solid #1e90ff; 
-            border-radius: 15px; box-shadow: 0 0 100px rgba(0,0,0,1); padding: 30px;
+            display: none; position: fixed; z-index: 1000; left: 20%; top: 20%; 
+            width: 60%; height: 60vh; background: #111111; border: 2px solid #444444; 
+            border-radius: 15px; box-shadow: 0 0 100px #000; padding: 75px 30px 30px 30px; 
         }
-        #zoomCalendar { height: 90%; width: 100%; }
-        #closeZoom { position: absolute; top: 10px; right: 15px; background: #444; color: #fff; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; }
-        .fc-button { background-color: #333 !important; border: 1px solid #444 !important; color: #fff !important; font-size: 0.9em !important; }
+        #zoomCalendar { height: 100%; width: 100%; }
+        #closeZoom { position: absolute; top: 15px; right: 20px; background: #444; color: #eee; border: none; padding: 8px 20px; border-radius: 5px; cursor: pointer; z-index: 1100; font-weight: bold; }
+
+        /* --- GIANT MONTH-VIEW FONTS --- */
+        #zoomCalendar .fc-daygrid-day-number { font-size: 2.5em !important; color: #ffffff !important; }
+        #zoomCalendar .fc-col-header-cell-cushion { font-size: 1.8em !important; }
+        #zoomCalendar .fc-event-title { font-size: 1.8em !important; }
+        #zoomCalendar .fc-event-time { font-size: 1.6em !important; margin-right: 5px; }
+        #zoomCalendar .fc-toolbar-title { font-size: 2.5em !important; }
+        #zoomCalendar .fc-button { padding: 8px 15px !important; font-size: 1.2em !important; background: #333 !important; color: #fff !important; }
+
+        /* --- CUSTOM MODAL POPUP --- */
+        #customModal { 
+            display: none; position: fixed; z-index: 2000; left: 50%; top: 50%; 
+            transform: translate(-50%, -50%); width: 80%; max-width: 450px; 
+            background: #222222; border: 1px solid #1e90ff; border-radius: 12px; 
+            padding: 25px; box-shadow: 0 0 50px #000; 
+        }
+        #mTitle { color: #1e90ff; margin-top: 0; font-size: 1.4em; }
+        #mClose { float: right; background: #444; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin-top: 15px; font-weight: bold; }
     </style>
 </head>
 <body>
     <div id="calendar"></div>
 
     <div id="zoomOverlay">
-        <button id="closeZoom" onclick="closeZoom()">Close X</button>
+        <button id="closeZoom" onclick="closeZoom()">CLOSE X</button>
         <div id="zoomCalendar"></div>
+    </div>
+    
+    <!-- Custom Modal Structure -->
+    <div id="customModal">
+        <h3 id="mTitle"></h3>
+        <p id="mTime" style="font-weight:bold; color:#aaaaaa;"></p>
+        <p id="mDesc" style="color:#dddddd; line-height:1.4;"></p>
+        <button id="mClose" onclick="closeModal()">Close</button>
     </div>
 
     <script>
         var mainCal, zoomCal;
         
         // --- CONFIGURATION ---
-        var API_KEY = 'AIzaSyD1icSp6SOC9A0yIsy0rGk0mr1B60sW2Zo';
+         var API_KEY = 'AIzaSyD1icSp6SOC9A0yIsy0rGk0mr1B60sW2Zo';
         var CAL_ID = 'eventsatcrossroads@gmail.com';
 
-        function closeZoom() { 
-            document.getElementById('zoomOverlay').style.display = 'none'; 
+        function closeZoom() { document.getElementById('zoomOverlay').style.display = 'none'; }
+        function closeModal() { document.getElementById('customModal').style.display = 'none'; }
+
+        // Master Detail Logic
+        function showDetails(info) {
+            if (info.jsEvent) info.jsEvent.preventDefault();
+            document.getElementById('mTitle').innerText = info.event.title;
+            
+            var timeString = info.event.allDay 
+                ? "All Day Event" 
+                : info.event.start.toLocaleString([], {weekday:'long', month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'});
+                
+            document.getElementById('mTime').innerText = timeString;
+            document.getElementById('mDesc').innerText = info.event.extendedProps.description || "No description provided.";
+            document.getElementById('customModal').style.display = 'block';
         }
 
         window.onload = function() {
-            function handleEventClick(info) {
-                info.jsEvent.preventDefault();
-                alert("Event: " + info.event.title + "\n" + (info.event.extendedProps.description || ""));
-            }
-
-            // 1. Initialize Main Year View
+            // 1. Initialize Year View
             mainCal = new FullCalendar.Calendar(document.getElementById('calendar'), {
                 googleCalendarApiKey: API_KEY,
                 events: { googleCalendarId: CAL_ID },
@@ -84,48 +133,38 @@
                 headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
                 buttonText: { today: 'Current Year' },
                 height: 'auto',
-                eventClick: handleEventClick
+                eventClick: showDetails
             });
             mainCal.render();
 
             // 2. Click Listener for Month Titles
             document.addEventListener('click', function(e) {
                 if (e.target.classList.contains('fc-multimonth-title')) {
-                    openZoom(e.target.innerText);
+                    // Extract Year from header to ensure we stay in 2026
+                    var currentYear = mainCal.view.title; 
+                    var monthOnly = e.target.innerText.split(' '); 
+                    openZoom(monthOnly + " 1, " + currentYear);
                 }
             });
 
-            function openZoom(titleText) {
+            function openZoom(dateStr) {
                 document.getElementById('zoomOverlay').style.display = 'block';
-                
                 setTimeout(function() {
                     var zoomEl = document.getElementById('zoomCalendar');
-                    var clickedDate = new Date(titleText + " 1");
-
                     if (zoomCal) zoomCal.destroy();
-
                     zoomCal = new FullCalendar.Calendar(zoomEl, {
                         googleCalendarApiKey: API_KEY,
-                        // Force the event source explicitly for the second instance
-                        eventSources: [
-                            {
-                                googleCalendarId: CAL_ID,
-                                className: 'google-event'
-                            }
-                        ],
+                        eventSources: [{ googleCalendarId: CAL_ID }],
                         initialView: 'dayGridMonth',
-                        initialDate: clickedDate,
-                        headerToolbar: false,
+                        initialDate: new Date(dateStr),
+                        headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
                         height: 'parent',
-                        eventClick: handleEventClick
+                        eventDisplay: 'block',
+                        eventClick: showDetails
                     });
-
                     zoomCal.render();
-                    
-                    // Final wake-up to ensure events draw
-                    zoomCal.refetchEvents();
                     window.dispatchEvent(new Event('resize'));
-                }, 200);
+                }, 150);
             }
         };
     </script>
