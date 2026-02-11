@@ -2,77 +2,69 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>DAKboard 2026 - Final Polish Build</title>
+    <title>DAKboard 2026 - Sticky Year View & Scaled Fonts</title>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.15/index.global.min.js"></script>
 
     <style>
         body { margin: 0; padding: 0; font-family: sans-serif; background: #000; color: #eee; overflow-y: auto; }
-        #calendar { max-width: 100%; padding: 5px 20px; font-size: 1.2em !important; }
+        
+        /* --- STICKY YEAR TOOLBAR --- */
+        #calendar { max-width: 100%; padding: 0 20px 20px 20px; }
+        .fc .fc-header-toolbar {
+            position: sticky;
+            top: 0;
+            background: #000;
+            z-index: 1000;
+            padding: 15px 0;
+            margin-bottom: 10px !important;
+            border-bottom: 1px solid #333;
+        }
+
+        /* --- YEAR VIEW: +10% FONT BUMP --- */
+        /* Increased base from 1.2em to 1.32em */
+        .fc-multimonth { font-size: 1.32em !important; }
 
         /* --- THE SHADING --- */
         .fc-daygrid-day { background-color: #1a1a1a !important; }
         .fc .fc-day-other { background-color: #000000 !important; }
 
+        /* --- MONTH LABELS --- */
+        .fc-multimonth-title { 
+            padding: 2px 0 !important; margin: 0 !important; 
+            font-size: 1.5em !important; color: #fff !important; 
+            cursor: pointer !important;
+        }
+
         /* --- EVENT ENGINE --- */
         .fc-daygrid-event-dot { display: none !important; } 
         .fc-event { cursor: pointer !important; margin: 1px 4px !important; border: none !important; background: transparent !important; }
-
         .fc-event-all-day, .fc-daygrid-block-event, .fc-h-event {
-            background-color: #333333 !important; 
-            border: 2px solid #555555 !important; 
-            border-radius: 6px !important;
+            background-color: #333333 !important; border: 2px solid #555555 !important; border-radius: 6px !important;
         }
-
         .fc-event-main { 
-            padding: 1px 8px !important; 
-            display: flex !important; 
-            align-items: baseline !important; 
-            overflow: hidden !important; 
-            white-space: nowrap !important;
-            text-overflow: clip !important; 
+            padding: 1px 8px !important; display: flex !important; align-items: baseline !important; 
+            overflow: hidden !important; white-space: nowrap !important; text-overflow: clip !important; 
         }
+        .fc-event-title { color: #8fc7ff !important; font-weight: bold !important; font-size: 0.85em !important; }
+        .fc-event-time { color: #dcdcdc !important; font-weight: 700 !important; font-size: 0.75em !important; margin-right: 4px !important; flex-shrink: 0 !important; }
 
-        .fc-event-title { 
-            color: #8fc7ff !important; 
-            font-weight: bold !important; 
-            font-size: 0.85em !important; 
-            text-overflow: clip !important; 
-        }
-
-        .fc-event-time { 
-            color: #dcdcdc !important; 
-            font-weight: 700 !important; 
-            font-size: 0.75em !important; 
-            margin-right: 4px !important; 
-            flex-shrink: 0 !important; 
-        }
-
-        /* --- +MORE LINKS (Matched to Event Title Blue) --- */
+        /* --- +MORE LINKS --- */
         .fc-daygrid-more-link { 
-            color: #8fc7ff !important; 
-            font-size: 0.45em !important; 
-            font-weight: bold !important;
-            padding: 1px 6px !important;
-            background: #111 !important; 
-            border: 2px solid #8fc7ff !important; /* Matched border */
-            border-radius: 4px !important;
-            margin-top: 1px !important;
-            display: inline-block !important;
+            color: #8fc7ff !important; font-size: 0.45em !important; font-weight: bold !important;
+            padding: 1px 6px !important; background: #111 !important; border: 2px solid #8fc7ff !important; 
+            border-radius: 4px !important; margin-top: 1px !important; display: inline-block !important;
         }
 
-        /* --- ZOOM OVERLAY (80% 4K / Adjusted Font) --- */
+        /* --- ZOOM OVERLAY (MONTH VIEW) --- */
         .zoom-container { 
             display: none; position: fixed; background: rgba(0,0,0,0.98); z-index: 2000; 
             left: 50%; top: 50%; transform: translate(-50%, -50%);
-            width: 80vw; height: 80vh; 
-            border: 3px solid #555; border-radius: 20px; padding: 30px; 
-            overflow-y: auto; 
+            width: 80vw; height: 80vh; border: 3px solid #555; border-radius: 20px; padding: 30px; overflow: hidden; 
         }
-        /* Reduced from 3.25em to 2.6em (-20%) */
-        #zoomCalendar { font-size: 2.6em !important; }
+        #zoomCalendar { font-size: 2.3em !important; height: 100% !important; }
 
-        /* --- MODAL --- */
+        /* --- DETAIL MODAL --- */
         #customModal { 
             display: none; position: fixed; z-index: 6000; left: 50%; top: 50%; transform: translate(-50%, -50%); 
             width: 90%; max-width: 1100px; background: #1a1a1a; border: 3px solid #8fc7ff; border-radius: 30px; padding: 60px; 
@@ -81,8 +73,9 @@
 </head>
 <body>
     <div id="calendar"></div>
+    
     <div id="zoomOverlay" class="zoom-container">
-        <button onclick="closeZoom()" style="position: absolute; top: 20px; right: 30px; background: #444444; color: #fff; padding: 15px 25px; border-radius: 8px; font-weight:bold; cursor:pointer;">CLOSE X</button>
+        <button onclick="closeZoom()" style="position: absolute; top: 20px; right: 30px; background: #444444; color: #fff; padding: 15px 25px; border-radius: 8px; font-weight:bold; cursor:pointer; z-index: 2100;">CLOSE X</button>
         <div id="zoomCalendar"></div>
     </div>
     
@@ -105,16 +98,12 @@
             const start = event.start;
             let end = event.end ? new Date(event.end) : new Date(start);
             let displayEnd = new Date(end);
-            // Handle exclusive Google end dates for all-day ranges
             if (event.allDay && end > start) { displayEnd.setDate(displayEnd.getDate() - 1); }
-
             const dateFmt = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
             const sameDay = start.toDateString() === displayEnd.toDateString();
-
             if (event.allDay) {
                 if (sameDay) return start.toLocaleDateString(undefined, dateFmt);
-                return start.toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'}) + 
-                       " — " + displayEnd.toLocaleDateString(undefined, dateFmt);
+                return start.toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'}) + " — " + displayEnd.toLocaleDateString(undefined, dateFmt);
             } else {
                 let timeStr = start.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}) + " – " + end.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
                 if (sameDay) return start.toLocaleDateString(undefined, dateFmt) + "<br>" + timeStr;
@@ -122,7 +111,7 @@
             }
         }
 
-        function initCalendar(el, view, date) {
+        function initCalendar(el, view, date, isZoom) {
             return new FullCalendar.Calendar(el, {
                 googleCalendarApiKey: API_KEY,
                 eventSources: [{ 
@@ -141,6 +130,8 @@
                 dayMaxEvents: 7,
                 eventOrder: "-allDay,start",
                 eventOrderStrict: true,
+                height: isZoom ? '100%' : 'auto',
+                contentHeight: isZoom ? '100%' : 'auto',
                 eventClick: function(info) {
                     info.jsEvent.preventDefault();
                     document.getElementById('mTitle').innerText = info.event.title;
@@ -152,14 +143,14 @@
         }
 
         window.onload = function() {
-            mainCal = initCalendar(document.getElementById('calendar'), 'multiMonthYear', null);
+            mainCal = initCalendar(document.getElementById('calendar'), 'multiMonthYear', null, false);
             mainCal.render();
             document.addEventListener('click', (e) => {
                 if (e.target.classList.contains('fc-multimonth-title')) {
                     document.getElementById('zoomOverlay').style.display = 'block';
                     document.body.style.overflow = 'hidden';
                     if (zoomCal) zoomCal.destroy();
-                    zoomCal = initCalendar(document.getElementById('zoomCalendar'), 'dayGridMonth', new Date(e.target.innerText + ", " + mainCal.view.title));
+                    zoomCal = initCalendar(document.getElementById('zoomCalendar'), 'dayGridMonth', new Date(e.target.innerText + ", " + mainCal.view.title), true);
                     zoomCal.render();
                 }
             });
