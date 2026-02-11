@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>DAKboard 2026 - Sticky Year View & Scaled Fonts</title>
+    <title>DAKboard 2026 - Optimized Left Navigation</title>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.15/index.global.min.js"></script>
 
@@ -12,29 +12,23 @@
         /* --- STICKY YEAR TOOLBAR --- */
         #calendar { max-width: 100%; padding: 0 20px 20px 20px; }
         .fc .fc-header-toolbar {
-            position: sticky;
-            top: 0;
-            background: #000;
-            z-index: 1000;
-            padding: 15px 0;
-            margin-bottom: 10px !important;
-            border-bottom: 1px solid #333;
+            position: sticky; top: 0; background: #000; z-index: 1000;
+            padding: 15px 0; margin-bottom: 10px !important; border-bottom: 2px solid #333;
         }
 
-        /* --- YEAR VIEW: +10% FONT BUMP --- */
-        /* Increased base from 1.2em to 1.32em */
+        /* --- YEAR VIEW FONT --- */
         .fc-multimonth { font-size: 1.32em !important; }
+        .fc-multimonth-title { font-size: 1.5em !important; color: #fff !important; cursor: pointer !important; }
 
         /* --- THE SHADING --- */
-        .fc-daygrid-day { background-color: #1a1a1a !important; }
+        .fc-daygrid-day { background-color: #1a1a1a !important; border: 1px solid #333 !important; }
         .fc .fc-day-other { background-color: #000000 !important; }
 
-        /* --- MONTH LABELS --- */
-        .fc-multimonth-title { 
-            padding: 2px 0 !important; margin: 0 !important; 
-            font-size: 1.5em !important; color: #fff !important; 
-            cursor: pointer !important;
-        }
+        /* --- UNIFORM HEIGHT (MONTH VIEW) --- */
+        #zoomCalendar .fc-daygrid-body, 
+        #zoomCalendar .fc-daygrid-body table, 
+        #zoomCalendar .fc-scrollgrid-sync-table { height: 100% !important; width: 100% !important; }
+        #zoomCalendar .fc-daygrid-row { flex: 1 1 0px !important; } 
 
         /* --- EVENT ENGINE --- */
         .fc-daygrid-event-dot { display: none !important; } 
@@ -42,21 +36,33 @@
         .fc-event-all-day, .fc-daygrid-block-event, .fc-h-event {
             background-color: #333333 !important; border: 2px solid #555555 !important; border-radius: 6px !important;
         }
-        .fc-event-main { 
-            padding: 1px 8px !important; display: flex !important; align-items: baseline !important; 
-            overflow: hidden !important; white-space: nowrap !important; text-overflow: clip !important; 
-        }
+        .fc-event-main { padding: 1px 8px !important; display: flex !important; align-items: baseline !important; overflow: hidden !important; }
         .fc-event-title { color: #8fc7ff !important; font-weight: bold !important; font-size: 0.85em !important; }
-        .fc-event-time { color: #dcdcdc !important; font-weight: 700 !important; font-size: 0.75em !important; margin-right: 4px !important; flex-shrink: 0 !important; }
+        .fc-event-time { color: #dcdcdc !important; font-weight: 700 !important; font-size: 0.75em !important; margin-right: 4px !important; }
 
         /* --- +MORE LINKS --- */
         .fc-daygrid-more-link { 
-            color: #8fc7ff !important; font-size: 0.45em !important; font-weight: bold !important;
-            padding: 1px 6px !important; background: #111 !important; border: 2px solid #8fc7ff !important; 
-            border-radius: 4px !important; margin-top: 1px !important; display: inline-block !important;
+            color: #8fc7ff !important; font-weight: bold !important; background: #111 !important; 
+            border: 2px solid #8fc7ff !important; border-radius: 6px !important; display: inline-block !important; padding: 2px 8px !important; 
         }
+        .fc-multimonth .fc-daygrid-more-link { font-size: 0.85em !important; margin-top: 2px !important; }
+        #zoomCalendar .fc-daygrid-more-link { font-size: 0.45em !important; padding: 1px 6px !important; margin-top: 1px !important; }
 
-        /* --- ZOOM OVERLAY (MONTH VIEW) --- */
+        /* --- MATCHING CLOSE BUTTON STYLING --- */
+        .fc-closeBtn-button {
+            background-color: #444 !important;
+            border-color: #444 !important;
+            color: #fff !important;
+            font-weight: bold !important;
+            text-transform: uppercase !important;
+            margin-left: 10px !important; /* Spacing from Today button */
+        }
+        .fc-closeBtn-button:hover { background-color: #666 !important; border-color: #666 !important; }
+
+        /* --- POPOVER & ZOOM --- */
+        .fc-theme-standard .fc-popover { background: #1a1a1a !important; border: 3px solid #8fc7ff !important; border-radius: 15px !important; z-index: 5000 !important; }
+        .fc-theme-standard .fc-popover-header { background: #333333 !important; color: #8fc7ff !important; padding: 10px !important; border-bottom: 2px solid #8fc7ff !important; border-radius: 12px 12px 0 0 !important; }
+        
         .zoom-container { 
             display: none; position: fixed; background: rgba(0,0,0,0.98); z-index: 2000; 
             left: 50%; top: 50%; transform: translate(-50%, -50%);
@@ -73,9 +79,7 @@
 </head>
 <body>
     <div id="calendar"></div>
-    
     <div id="zoomOverlay" class="zoom-container">
-        <button onclick="closeZoom()" style="position: absolute; top: 20px; right: 30px; background: #444444; color: #fff; padding: 15px 25px; border-radius: 8px; font-weight:bold; cursor:pointer; z-index: 2100;">CLOSE X</button>
         <div id="zoomCalendar"></div>
     </div>
     
@@ -104,11 +108,9 @@
             if (event.allDay) {
                 if (sameDay) return start.toLocaleDateString(undefined, dateFmt);
                 return start.toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'}) + " — " + displayEnd.toLocaleDateString(undefined, dateFmt);
-            } else {
-                let timeStr = start.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}) + " – " + end.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
-                if (sameDay) return start.toLocaleDateString(undefined, dateFmt) + "<br>" + timeStr;
-                return start.toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'}) + " – " + displayEnd.toLocaleDateString(undefined, dateFmt) + "<br>" + timeStr;
             }
+            let timeStr = start.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}) + " – " + end.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+            return (sameDay ? start.toLocaleDateString(undefined, dateFmt) : start.toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'}) + " – " + displayEnd.toLocaleDateString(undefined, dateFmt)) + "<br>" + timeStr;
         }
 
         function initCalendar(el, view, date, isZoom) {
@@ -125,13 +127,24 @@
                 initialView: view,
                 initialDate: date || new Date(),
                 multiMonthMaxColumns: 3,
-                headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
+                headerToolbar: { 
+                    left: isZoom ? 'prev,next today closeBtn' : 'prev,next today', 
+                    center: 'title', 
+                    right: '' 
+                },
+                customButtons: {
+                    closeBtn: {
+                        text: 'Close X',
+                        click: function() { closeZoom(); }
+                    }
+                },
                 eventTimeFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'narrow', omitZeroMinute: false },
                 dayMaxEvents: 7,
                 eventOrder: "-allDay,start",
                 eventOrderStrict: true,
                 height: isZoom ? '100%' : 'auto',
                 contentHeight: isZoom ? '100%' : 'auto',
+                expandRows: isZoom, 
                 eventClick: function(info) {
                     info.jsEvent.preventDefault();
                     document.getElementById('mTitle').innerText = info.event.title;
