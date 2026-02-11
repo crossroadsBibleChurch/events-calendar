@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>DAKboard 2026 - Precision Multi-Day Build</title>
+    <title>DAKboard 2026 - Final Polish Build</title>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.15/index.global.min.js"></script>
 
@@ -13,9 +13,6 @@
         /* --- THE SHADING --- */
         .fc-daygrid-day { background-color: #1a1a1a !important; }
         .fc .fc-day-other { background-color: #000000 !important; }
-
-        /* --- YEAR VIEW --- */
-        .fc-multimonth-title { font-size: 1.5em !important; color: #fff !important; padding: 2px 0 !important; }
 
         /* --- EVENT ENGINE --- */
         .fc-daygrid-event-dot { display: none !important; } 
@@ -47,24 +44,24 @@
             color: #dcdcdc !important; 
             font-weight: 700 !important; 
             font-size: 0.75em !important; 
-            margin-right: 4px !important; /* Tight gap restored */
+            margin-right: 4px !important; 
             flex-shrink: 0 !important; 
         }
 
-        /* --- +MORE LINKS (Restored tiny Dodger Blue) --- */
+        /* --- +MORE LINKS (Matched to Event Title Blue) --- */
         .fc-daygrid-more-link { 
-            color: #1e90ff !important; 
+            color: #8fc7ff !important; 
             font-size: 0.45em !important; 
             font-weight: bold !important;
             padding: 1px 6px !important;
             background: #111 !important; 
-            border: 2px solid #1e90ff !important; 
+            border: 2px solid #8fc7ff !important; /* Matched border */
             border-radius: 4px !important;
             margin-top: 1px !important;
             display: inline-block !important;
         }
 
-        /* --- ZOOM OVERLAY (80% 4K) --- */
+        /* --- ZOOM OVERLAY (80% 4K / Adjusted Font) --- */
         .zoom-container { 
             display: none; position: fixed; background: rgba(0,0,0,0.98); z-index: 2000; 
             left: 50%; top: 50%; transform: translate(-50%, -50%);
@@ -72,7 +69,8 @@
             border: 3px solid #555; border-radius: 20px; padding: 30px; 
             overflow-y: auto; 
         }
-        #zoomCalendar { font-size: 3.25em !important; }
+        /* Reduced from 3.25em to 2.6em (-20%) */
+        #zoomCalendar { font-size: 2.6em !important; }
 
         /* --- MODAL --- */
         #customModal { 
@@ -106,12 +104,9 @@
         function formatDetails(event) {
             const start = event.start;
             let end = event.end ? new Date(event.end) : new Date(start);
-            
-            // Fix: Google exclusive end dates for multi-day events
             let displayEnd = new Date(end);
-            if (event.allDay && end > start) {
-                displayEnd.setDate(displayEnd.getDate() - 1);
-            }
+            // Handle exclusive Google end dates for all-day ranges
+            if (event.allDay && end > start) { displayEnd.setDate(displayEnd.getDate() - 1); }
 
             const dateFmt = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
             const sameDay = start.toDateString() === displayEnd.toDateString();
@@ -133,7 +128,6 @@
                 eventSources: [{ 
                     googleCalendarId: CAL_ID,
                     eventDataTransform: (e) => {
-                        // Ensure multi-day events are flagged for sorting
                         const d = (new Date(e.end) - new Date(e.start)) / 36e5;
                         if (d >= 24) e.allDay = true;
                         return e;
@@ -151,7 +145,7 @@
                     info.jsEvent.preventDefault();
                     document.getElementById('mTitle').innerText = info.event.title;
                     document.getElementById('mTime').innerHTML = formatDetails(info.event);
-                    document.getElementById('mDesc').innerHTML = (info.event.extendedProps.description || "No description.").replace(/\n/g, "<br>");
+                    document.getElementById('mDesc').innerHTML = (info.event.extendedProps.description || "No description provided.").replace(/\n/g, "<br>");
                     document.getElementById('customModal').style.display = 'block';
                 }
             });
