@@ -2,140 +2,159 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>DAKboard 2026 - 3-Column Scrolling Relaxed</title>
-    <!-- THE CORE ENGINE -->
+    <title>DAKboard 2026 - Black BG Fixed</title>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
-    
-    <!-- THE GOOGLE PLUGIN -->
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.15/index.global.min.js"></script>
 
-
     <style>
-        /* --- GLOBAL THEME & SCROLLING --- */
-        body { 
-            margin: 0; padding: 0; font-family: sans-serif; background: #000; color: #eee; 
-            overflow-y: auto !important; /* ACTIVATES SYSTEM SCROLLING */
-        }
-        #calendar { max-width: 100%; height: auto; padding: 20px; }
-        
-        /* 1. RELAXED & ENLARGED GRID */
-        .fc { 
-            font-size: 1.35em; /* Doubled base font */
-            color: #eee; background: #000; line-height: 1.3 !important;
-        }
+        body { margin: 0; padding: 0; font-family: sans-serif; background: #000; color: #eee; }
+        #calendar { max-width: 100%; height: auto; padding: 5px 20px; }
 
-        /* Lightened Grid Lines for Contrast */
-        .fc-theme-standard td, .fc-theme-standard th { 
-            background: #000 !important; border: 1px solid #444 !important; 
-        }
+        /* Header & Sync Swap Logic */
+        .fc-header-toolbar { margin-bottom: 10px !important; padding: 5px 0 !important; }
+        #refreshInfo { font-size: 0.9em; color: #555; order: 3; padding-right: 10px; }
 
-        /* Shading */
+        /* Shading for Active Days */
         .fc-daygrid-day:not(.fc-day-other) { background: #1a1a1a !important; }
-        .fc-day-other { background: #000 !important; }
+        .fc-day-other .fc-daygrid-day-number { color: #444 !important; }
 
-        /* Loosened Padding for a Less Cramped Feel */
-        .fc-header-toolbar { margin-bottom: 30px !important; padding: 10px 0 !important; }
-        .fc-toolbar-title { font-size: 2.2em !important; font-weight: bold; }
-        .fc-multimonth-title { font-size: 2em !important; font-weight: bold; padding: 15px 0 !important; cursor: pointer; }
-        .fc-daygrid-day-frame { min-height: 60px !important; padding: 6px !important; }
-        .fc-multimonth-month { padding: 20px !important; }
+        /* Year View Scaling */
+        .fc-multimonth { font-size: 0.85em !important; }
+        .fc-multimonth-daygrid-day.fc-day-other .fc-daygrid-event { display: none !important; }
 
-        /* 2. CHIP LOGIC: Subtle Ghost Style */
-        .fc-daygrid-event { background: transparent !important; border: none !important; cursor: pointer !important; margin: 3px 0 !important; }
-        .fc-h-event, .fc-event-all-day, .fc-daygrid-block-event, .fc-multimonth-daygrid-event {
-            background: rgba(90, 90, 90, 0.25) !important; /* Faint fill */
-            border: 1.5px solid #888 !important; /* Clearer border */
-            border-radius: 5px !important; display: block !important; padding: 4px 8px !important;
+        /* Month View 4:3 Aspect Ratio */
+        #zoomCalendar .fc-daygrid-day-frame { aspect-ratio: 4 / 3 !important; }
+        #zoomCalendar .fc { font-size: 1.62em !important; line-height: 1.1 !important; }
+
+        /* --- EVENT ENGINE --- */
+        .fc-daygrid-event { 
+            display: flex !important; 
+            align-items: center !important; 
+            margin: 1px 5px !important; /* 5px breathing space L/R */
+            padding: 0 !important;
+            width: calc(100% - 10px) !important;
+            overflow: hidden !important;
+            white-space: nowrap !important;
+            cursor: pointer !important;
         }
 
-        /* Text Colors */
-        .fc-event-title { color: #8fc7ff !important; font-weight: bold !important; font-size: 1.1em !important; }
-        
-        /* Subtle Timed Colors (Muted Silver) */
-        .fc-event-time { color: #a0a0a0 !important; font-weight: normal !important; margin-right: 8px !important; font-size: 0.9em !important; }
+        /* Timed Events: Text only, no chips */
+        .fc-daygrid-event:not(.fc-event-all-day) { background: transparent !important; border: none !important; }
 
-        .fc-daygrid-event-dot { display: none !important; }
+        /* All-Day Events: Grey Chips with Lighter Borders */
+        .fc-event-all-day {
+            background: rgba(120, 120, 120, 0.4) !important; 
+            border: 1px solid #aaa !important; 
+            border-radius: 4px !important;
+            padding: 2px 4px !important;
+        }
 
-        /* 3. MODALS & ZOOM (40% Smaller & Re-scaled) */
-        .fade-overlay { display: none; opacity: 0; position: fixed; transition: opacity 0.3s; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); z-index: 2000; }
-        .fade-overlay.show { display: block; opacity: 1; }
-        #zoomOverlay { left: 22%; top: 20%; width: 56%; height: 60vh; border: 2px solid #555; border-radius: 20px; padding: 60px 40px 40px 40px; box-shadow: 0 0 150px #000; }
-        #zoomCalendar { height: 100%; width: 100%; }
-        #closeZoom { position: absolute; top: 20px; right: 30px; background: #444; color: #eee; border: none; padding: 12px 25px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+        .fc-event-time { 
+            color: #dcdcdc !important; 
+            font-weight: 700 !important; 
+            font-size: 0.75em !important; 
+            width: 42px !important; 
+            flex-shrink: 0;
+            margin-right: 6px !important; /* 6px breathing space between time and title */
+        }
 
-        #customModal { display: none; opacity: 0; position: fixed; z-index: 3000; left: 50%; top: 50%; transform: translate(-50%, -50%) scale(0.9); transition: all 0.3s; width: 80%; max-width: 600px; background: #1a1a1a; border: 2px solid #8fc7ff; border-radius: 20px; padding: 40px; }
-        #customModal.show { display: block; opacity: 1; transform: translate(-50%, -50%) scale(1); }
-        #refreshInfo { position: fixed; top: 15px; left: 220px; font-size: 1.1em; color: #555; font-weight: bold; z-index: 200; }
+        .fc-event-title { 
+            color: #8fc7ff !important; 
+            font-weight: bold !important; 
+            overflow: hidden !important; 
+            text-overflow: clip !important; /* Truncate without ellipses */
+            flex-grow: 1;
+        }
+
+        /* Overlays & Modals */
+        .zoom-container { display: none; position: fixed; background: rgba(0,0,0,0.98); z-index: 2000; left: 2%; top: 2%; width: 96%; height: 96vh; border: 2px solid #555; border-radius: 15px; padding: 30px; overflow-y: auto; }
+        #closeZoom { position: absolute; top: 15px; right: 20px; background: #c0392b; color: #fff; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; z-index: 2100; font-weight: bold; }
+        #customModal { display: none; position: fixed; z-index: 3000; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 80%; max-width: 600px; background: #1a1a1a; border: 2px solid #8fc7ff; border-radius: 20px; padding: 40px; box-shadow: 0 0 50px #000; }
     </style>
 </head>
 <body>
-    <div id="refreshInfo">Sync: <span id="lastUpdate">--:--</span></div>
+    <div style="display: none;"><div id="refreshInfo">Sync: <span id="lastUpdate">--:--</span></div></div>
     <div id="calendar"></div>
-
-    <div id="customModal"><h3 id="mTitle"></h3><p id="mTime" style="color:#aaa; font-weight:bold; font-size:1.3em;"></p><div id="mDesc" style="color:#ddd; line-height:1.7; font-size:1.2em;"></div><button id="mClose" style="float:right; margin-top:30px; background:#444; color:#fff; border:none; padding:15px 30px; border-radius:10px; cursor:pointer;" onclick="closeModal()">Close</button></div>
-    <div id="zoomOverlay" class="fade-overlay"><button id="closeZoom" onclick="closeZoom()">CLOSE X</button><div id="zoomCalendar"></div></div>
+    <div id="zoomOverlay" class="zoom-container"><button id="closeZoom" onclick="closeZoom()">CLOSE X</button><div id="zoomCalendar"></div></div>
+    
+    <div id="customModal">
+        <h3 id="mTitle" style="margin-top:0; color:#8fc7ff;"></h3>
+        <p id="mTime" style="color:#aaa; font-weight:bold;"></p>
+        <div id="mDesc" style="color:#ddd; margin-bottom:20px;"></div>
+        <button style="float:right; background:#444; color:#fff; border:none; padding:10px 20px; border-radius:5px; cursor:pointer;" onclick="closeModal()">Close</button>
+    </div>
 
     <script>
         var mainCal, zoomCal;
         var API_KEY = 'AIzaSyD1icSp6SOC9A0yIsy0rGk0mr1B60sW2Zo';
         var CAL_ID = 'eventsatcrossroads@gmail.com';
 
-        function showEl(id) { const el = document.getElementById(id); el.style.display = 'block'; setTimeout(() => el.classList.add('show'), 10); }
-        function hideEl(id) { const el = document.getElementById(id); el.classList.remove('show'); setTimeout(() => el.style.display = 'none', 300); }
-        function closeModal() { hideEl('customModal'); }
-        function closeZoom() { hideEl('zoomOverlay'); }
+        function formatTime(arg) {
+            if (arg.event.allDay) return "ALL";
+            let d = arg.event.start;
+            let h = d.getHours() % 12 || 12;
+            let m = d.getMinutes().toString().padStart(2, '0');
+            return h + ':' + m + (d.getHours() >= 12 ? 'p' : 'a');
+        }
+
+        function closeModal() { document.getElementById('customModal').style.display = 'none'; }
+        function closeZoom() { document.getElementById('zoomOverlay').style.display = 'none'; document.body.style.overflow = 'auto'; }
 
         function showDetails(info) {
-            if (info.jsEvent) info.jsEvent.preventDefault();
+            info.jsEvent.preventDefault();
             const event = info.event;
             document.getElementById('mTitle').innerText = event.title;
-            const timeStr = event.allDay ? "All Day Event" : event.start.toLocaleString([], { weekday: 'long', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+            const timeStr = event.allDay ? "All Day Event" : event.start.toLocaleString([], { weekday: 'short', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
             document.getElementById('mTime').innerText = timeStr;
             document.getElementById('mDesc').innerHTML = (event.extendedProps.description || "No description provided.").replace(/\n/g, "<br>");
-            showEl('customModal');
+            document.getElementById('customModal').style.display = 'block';
+        }
+
+        function initCalendar(el, view, date) {
+            return new FullCalendar.Calendar(el, {
+                googleCalendarApiKey: API_KEY,
+                eventSources: [{ googleCalendarId: CAL_ID }],
+                initialView: view,
+                initialDate: date || new Date(),
+                multiMonthMaxColumns: 3,
+                headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
+                
+                // FIXED BACKGROUND LOGIC
+                dayCellDidMount: function(info) {
+                    if (info.isOther) {
+                        info.el.style.setProperty('background-color', '#000000', 'important');
+                    }
+                },
+
+                eventClick: showDetails,
+                eventContent: function(arg) {
+                    let timeText = formatTime(arg);
+                    let isAllDay = arg.event.allDay;
+                    return { html: `<div class="fc-event-time" style="width:${isAllDay ? 'auto' : '42px'} !important;">${timeText}</div><div class="fc-event-title">${arg.event.title}</div>` };
+                },
+                loading: (isLoading) => {
+                    if (!isLoading && el.id === 'calendar') {
+                        document.getElementById('lastUpdate').innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                        const target = document.querySelector('.fc-toolbar-chunk:last-child');
+                        if(target) target.appendChild(document.getElementById('refreshInfo'));
+                    }
+                }
+            });
         }
 
         window.onload = function() {
-            mainCal = new FullCalendar.Calendar(document.getElementById('calendar'), {
-                googleCalendarApiKey: API_KEY,
-                events: { googleCalendarId: CAL_ID },
-                initialView: 'multiMonthYear',
-                multiMonthMaxColumns: 3, // SWITCHED TO 3 COLUMNS
-                fixedWeekCount: false,
-                showNonCurrentDates: true,
-                headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
-                height: 'auto', // AUTO ALLOWS NATURAL OVERFLOW FOR SCROLLING
-                eventClick: showDetails,
-                loading: (isLoading) => { if (!isLoading) document.getElementById('lastUpdate').innerText = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }); }
-            });
+            mainCal = initCalendar(document.getElementById('calendar'), 'multiMonthYear');
             mainCal.render();
-
             document.addEventListener('click', (e) => {
                 if (e.target.classList.contains('fc-multimonth-title')) {
-                    openZoom(e.target.innerText + ", " + mainCal.view.title);
+                    document.getElementById('zoomOverlay').style.display = 'block';
+                    document.body.style.overflow = 'hidden';
+                    if (zoomCal) zoomCal.destroy();
+                    zoomCal = initCalendar(document.getElementById('zoomCalendar'), 'dayGridMonth', new Date(e.target.innerText + ", " + mainCal.view.title));
+                    zoomCal.render();
                 }
             });
-
-            function openZoom(dateStr) {
-                showEl('zoomOverlay');
-                setTimeout(() => {
-                    if (zoomCal) zoomCal.destroy();
-                    zoomCal = new FullCalendar.Calendar(document.getElementById('zoomCalendar'), {
-                        googleCalendarApiKey: API_KEY,
-                        eventSources: [{ googleCalendarId: CAL_ID }],
-                        initialView: 'dayGridMonth',
-                        initialDate: new Date(dateStr),
-                        headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
-                        height: 'parent',
-                        eventDisplay: 'auto',
-                        eventClick: showDetails
-                    });
-                    zoomCal.render();
-                    window.dispatchEvent(new Event('resize'));
-                }, 150);
-            }
         };
     </script>
 </body>
 </html>
-
