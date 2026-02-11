@@ -2,21 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>DAKboard 2026 - Fixed Shading & Date Logic</title>
+    <title>DAKboard 2026 - Precision Multi-Day Build</title>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.15/index.global.min.js"></script>
 
     <style>
         body { margin: 0; padding: 0; font-family: sans-serif; background: #000; color: #eee; overflow-y: auto; }
-        #calendar { max-width: 100%; padding: 5px 20px; }
+        #calendar { max-width: 100%; padding: 5px 20px; font-size: 1.2em !important; }
 
-        /* --- THE SHADING FIX (PURE CSS) --- */
+        /* --- THE SHADING --- */
         .fc-daygrid-day { background-color: #1a1a1a !important; }
         .fc .fc-day-other { background-color: #000000 !important; }
 
-        /* --- YEAR VIEW: SPACE OPTIMIZATION --- */
-        .fc-multimonth-month { padding: 0 1.2% 5px 1.2% !important; }
-        .fc-multimonth-title { padding: 2px 0 !important; margin: 0 !important; font-size: 1.4em !important; color: #fff !important; }
+        /* --- YEAR VIEW --- */
+        .fc-multimonth-title { font-size: 1.5em !important; color: #fff !important; padding: 2px 0 !important; }
 
         /* --- EVENT ENGINE --- */
         .fc-daygrid-event-dot { display: none !important; } 
@@ -42,32 +41,40 @@
             font-weight: bold !important; 
             font-size: 0.85em !important; 
             text-overflow: clip !important; 
-            white-space: nowrap !important;
-            flex-grow: 1;
         }
 
         .fc-event-time { 
             color: #dcdcdc !important; 
             font-weight: 700 !important; 
             font-size: 0.75em !important; 
-            margin-right: 8px !important; 
+            margin-right: 4px !important; /* Tight gap restored */
             flex-shrink: 0 !important; 
-            min-width: 48px !important; 
         }
 
-        .fc-event-all-day .fc-event-time, .fc-daygrid-block-event .fc-event-time, .fc-h-event .fc-event-time { display: none !important; }
+        /* --- +MORE LINKS (Restored tiny Dodger Blue) --- */
+        .fc-daygrid-more-link { 
+            color: #1e90ff !important; 
+            font-size: 0.45em !important; 
+            font-weight: bold !important;
+            padding: 1px 6px !important;
+            background: #111 !important; 
+            border: 2px solid #1e90ff !important; 
+            border-radius: 4px !important;
+            margin-top: 1px !important;
+            display: inline-block !important;
+        }
 
-        /* --- POPOVER & ZOOM --- */
-        .fc-theme-standard .fc-popover { background: #1a1a1a !important; border: 3px solid #8fc7ff !important; border-radius: 15px !important; z-index: 5000 !important; }
+        /* --- ZOOM OVERLAY (80% 4K) --- */
         .zoom-container { 
             display: none; position: fixed; background: rgba(0,0,0,0.98); z-index: 2000; 
             left: 50%; top: 50%; transform: translate(-50%, -50%);
-            width: 95%; height: 90vh; border: 2px solid #555; border-radius: 15px; padding: 15px; 
+            width: 80vw; height: 80vh; 
+            border: 3px solid #555; border-radius: 20px; padding: 30px; 
             overflow-y: auto; 
         }
-        #zoomCalendar { font-size: 2.6em !important; }
+        #zoomCalendar { font-size: 3.25em !important; }
 
-        /* --- GIANT MODAL --- */
+        /* --- MODAL --- */
         #customModal { 
             display: none; position: fixed; z-index: 6000; left: 50%; top: 50%; transform: translate(-50%, -50%); 
             width: 90%; max-width: 1100px; background: #1a1a1a; border: 3px solid #8fc7ff; border-radius: 30px; padding: 60px; 
@@ -77,7 +84,7 @@
 <body>
     <div id="calendar"></div>
     <div id="zoomOverlay" class="zoom-container">
-        <button onclick="closeZoom()" style="position: absolute; top: 10px; right: 20px; background: #444444; color: #fff; padding: 10px 20px; border-radius: 5px; cursor: pointer; z-index: 2100;">CLOSE X</button>
+        <button onclick="closeZoom()" style="position: absolute; top: 20px; right: 30px; background: #444444; color: #fff; padding: 15px 25px; border-radius: 8px; font-weight:bold; cursor:pointer;">CLOSE X</button>
         <div id="zoomCalendar"></div>
     </div>
     
@@ -96,66 +103,69 @@
         function closeModal() { document.getElementById('customModal').style.display = 'none'; }
         function closeZoom() { document.getElementById('zoomOverlay').style.display = 'none'; document.body.style.overflow = 'auto'; }
 
-        // Restoration of the smart date/time formatter
         function formatDetails(event) {
             const start = event.start;
             let end = event.end ? new Date(event.end) : new Date(start);
-            const durationHours = (end - start) / (1000 * 60 * 60);
             
-            // Full Day detection (AllDay flag or spans midnight to midnight)
-            const isFullDay = event.allDay || durationHours >= 24 || (start.getHours() === 0 && end.getHours() === 0);
-            const dateFmt = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
+            // Fix: Google exclusive end dates for multi-day events
+            let displayEnd = new Date(end);
+            if (event.allDay && end > start) {
+                displayEnd.setDate(displayEnd.getDate() - 1);
+            }
 
-            if (isFullDay) {
-                let displayEnd = new Date(end);
-                // Google multi-day events often have an exclusive end date; adjust back by 1 day if it's a true multi-day
-                if (durationHours >= 24) displayEnd.setDate(displayEnd.getDate() - 1);
-                
-                if (start.toDateString() === displayEnd.toDateString()) {
-                    return start.toLocaleDateString(undefined, dateFmt);
-                }
+            const dateFmt = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
+            const sameDay = start.toDateString() === displayEnd.toDateString();
+
+            if (event.allDay) {
+                if (sameDay) return start.toLocaleDateString(undefined, dateFmt);
                 return start.toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'}) + 
-                       " — " + 
-                       displayEnd.toLocaleDateString(undefined, dateFmt);
+                       " — " + displayEnd.toLocaleDateString(undefined, dateFmt);
             } else {
-                return start.toLocaleDateString(undefined, dateFmt) + "<br>" + 
-                       start.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}) + " – " + 
-                       end.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+                let timeStr = start.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}) + " – " + end.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
+                if (sameDay) return start.toLocaleDateString(undefined, dateFmt) + "<br>" + timeStr;
+                return start.toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'}) + " – " + displayEnd.toLocaleDateString(undefined, dateFmt) + "<br>" + timeStr;
             }
         }
 
-        function initCalendar(el, view, date, isZoomed) {
+        function initCalendar(el, view, date) {
             return new FullCalendar.Calendar(el, {
                 googleCalendarApiKey: API_KEY,
-                eventSources: [{ googleCalendarId: CAL_ID }],
+                eventSources: [{ 
+                    googleCalendarId: CAL_ID,
+                    eventDataTransform: (e) => {
+                        // Ensure multi-day events are flagged for sorting
+                        const d = (new Date(e.end) - new Date(e.start)) / 36e5;
+                        if (d >= 24) e.allDay = true;
+                        return e;
+                    }
+                }],
                 initialView: view,
                 initialDate: date || new Date(),
                 multiMonthMaxColumns: 3,
                 headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
                 eventTimeFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'narrow', omitZeroMinute: false },
                 dayMaxEvents: 7,
-                dayMaxEventRows: 7,
                 eventOrder: "-allDay,start",
                 eventOrderStrict: true,
                 eventClick: function(info) {
                     info.jsEvent.preventDefault();
                     document.getElementById('mTitle').innerText = info.event.title;
                     document.getElementById('mTime').innerHTML = formatDetails(info.event);
-                    document.getElementById('mDesc').innerHTML = (info.event.extendedProps.description || "No description provided.").replace(/\n/g, "<br>");
+                    document.getElementById('mDesc').innerHTML = (info.event.extendedProps.description || "No description.").replace(/\n/g, "<br>");
                     document.getElementById('customModal').style.display = 'block';
                 }
             });
         }
 
         window.onload = function() {
-            mainCal = initCalendar(document.getElementById('calendar'), 'multiMonthYear', null, false);
+            mainCal = initCalendar(document.getElementById('calendar'), 'multiMonthYear', null);
             mainCal.render();
             document.addEventListener('click', (e) => {
                 if (e.target.classList.contains('fc-multimonth-title')) {
                     document.getElementById('zoomOverlay').style.display = 'block';
                     document.body.style.overflow = 'hidden';
                     if (zoomCal) zoomCal.destroy();
-                    zoomCal = initCalendar(document.getElementById('zoomCalendar'), 'dayGridMonth', new Date(e.target.innerText + ", " + mainCal.view.title), true);
+                    zoomCal = initCalendar(document.getElementById('zoomCalendar'), 'dayGridMonth', new Date(e.target.innerText + ", " + mainCal.view.title));
                     zoomCal.render();
                 }
             });
