@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>DAKboard 2026 - Time Stripped & Ranges Fixed</title>
+    <title>DAKboard 2026 - Ultra Tight Alignment</title>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.15/index.global.min.js"></script>
 
@@ -10,45 +10,61 @@
         body { margin: 0; padding: 0; font-family: sans-serif; background: #000; color: #eee; }
         #calendar { max-width: 100%; height: auto; padding: 5px 20px; }
 
-        /* --- BACKGROUNDS --- */
+        /* --- THEME COLORS --- */
         .fc-daygrid-day:not(.fc-day-other) { background: #1a1a1a !important; }
         .fc-day-other .fc-daygrid-day-number { color: #444 !important; }
-        .fc .fc-multimonth-daygrid-day.fc-day-other, .fc .fc-daygrid-day.fc-day-other { background-color: #000 !important; }
+        .fc .fc-multimonth-daygrid-day.fc-day-other, 
+        .fc .fc-daygrid-day.fc-day-other { background-color: #000 !important; }
 
-        /* --- EVENT ENGINE --- */
+        /* --- EVENT CHIPS --- */
         .fc-daygrid-event-dot { display: none !important; } 
         .fc-event { cursor: pointer !important; white-space: nowrap !important; margin: 1px 2px !important; }
-
-        /* Full-Day Chips Styling */
         .fc-event-all-day, .fc-daygrid-block-event, .fc-h-event {
-            background-color: #444444 !important; 
-            border: 1px solid #999999 !important; 
-            border-radius: 4px !important;
+            background-color: #444444 !important; border: 1px solid #999999 !important; border-radius: 4px !important;
         }
-
-        /* STRICT: No times inside chips in calendar views */
-        .fc-event-all-day .fc-event-time, .fc-daygrid-block-event .fc-event-time, .fc-h-event .fc-event-time { 
-            display: none !important; 
-        }
-
-        /* Timed Events: Plain Text */
-        .fc-daygrid-event:not(.fc-event-all-day):not(.fc-daygrid-block-event) { background: transparent !important; border: none !important; }
-        .fc-event-main { padding: 1px 6px !important; }
-        .fc-event-time { color: #dcdcdc !important; font-weight: 700; font-size: 0.75em; margin-right: 5px; }
+        .fc-event-all-day .fc-event-time, .fc-daygrid-block-event .fc-event-time, .fc-h-event .fc-event-time { display: none !important; }
+        .fc-event-main { padding: 1px 4px !important; display: flex !important; align-items: baseline !important; }
         .fc-event-title { color: #8fc7ff !important; font-weight: bold !important; }
-
-        /* --- MODAL & BUTTONS --- */
-        .zoom-container { display: none; position: fixed; background: rgba(0,0,0,0.98); z-index: 2000; left: 2%; top: 2%; width: 96%; height: 96vh; border: 2px solid #555; border-radius: 15px; padding: 30px; overflow-y: auto; }
-        #closeZoom { position: absolute; top: 15px; right: 20px; background: #444444; color: #fff; border: 1px solid #999999; padding: 10px 20px; border-radius: 5px; cursor: pointer; z-index: 2100; font-weight: bold; }
         
+        /* ULTRA TIGHT TIME ALIGNMENT (Year View) */
+        .fc-event-time { 
+            color: #dcdcdc !important; 
+            font-weight: 700 !important; 
+            font-size: 0.75em !important; 
+            margin-right: 4px !important; /* Minimal gap to title */
+            flex-shrink: 0 !important;
+            /* Removed min-width to let title pull in tight */
+        }
+
+        /* --- MONTH VIEW SCALING --- */
+        .zoom-container { 
+            display: none; position: fixed; background: rgba(0,0,0,0.98); z-index: 2000; 
+            left: 50%; top: 50%; transform: translate(-50%, -50%);
+            width: 85%; height: 75vh; 
+            border: 2px solid #555; border-radius: 15px; padding: 30px; overflow-y: auto; 
+        }
+
+        /* --- 2.5x FONT BOOST & TIGHT SPACING --- */
+        #zoomCalendar { font-size: 2.5em !important; }
+        #zoomCalendar .fc-event-title { font-size: 0.75em !important; } 
+        #zoomCalendar .fc-daygrid-day-number { font-size: 1.1em !important; padding: 8px !important; }
+        
+        /* TIGHT TIME ALIGNMENT (Month View) */
+        #zoomCalendar .fc-event-time { 
+            font-size: 0.65em !important; 
+            margin-right: 6px !important; /* Scaled tight gap */
+        }
+
+        /* --- UI ELEMENTS --- */
+        #closeZoom { 
+            position: absolute; top: 15px; right: 20px; background: #444444; color: #fff; 
+            border: 1px solid #999999; padding: 10px 20px; border-radius: 5px; cursor: pointer; z-index: 2100; font-weight: bold; 
+        }
         #customModal { 
             display: none; position: fixed; z-index: 3000; left: 50%; top: 50%; transform: translate(-50%, -50%); 
             width: 85%; max-width: 650px; background: #1a1a1a; border: 2px solid #8fc7ff; border-radius: 20px; padding: 40px; 
             box-shadow: 0 0 50px #000;
         }
-        #mTitle { margin-top:0; color:#8fc7ff; font-size: 1.8em; margin-bottom: 5px; }
-        #mTime { color:#fff; font-weight:bold; font-size: 1.15em; margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px; line-height: 1.4;}
-        #mDesc { color:#ccc; line-height: 1.6; font-size: 1.1em; }
     </style>
 </head>
 <body>
@@ -56,9 +72,9 @@
     <div id="zoomOverlay" class="zoom-container"><button id="closeZoom" onclick="closeZoom()">CLOSE X</button><div id="zoomCalendar"></div></div>
     
     <div id="customModal">
-        <div id="mTitle"></div>
-        <div id="mTime"></div>
-        <div id="mDesc"></div>
+        <div id="mTitle" style="color:#8fc7ff; font-size: 1.8em;"></div>
+        <div id="mTime" style="color:#fff; font-weight:bold; margin: 15px 0; border-bottom: 1px solid #333; padding-bottom: 10px; line-height: 1.4;"></div>
+        <div id="mDesc" style="color:#ccc; font-size: 1.1em; line-height: 1.6;"></div>
         <button style="margin-top:25px; float:right; background:#444444; color:#fff; border:1px solid #999999; padding:12px 24px; border-radius:5px; cursor:pointer;" onclick="closeModal()">Close</button>
     </div>
 
@@ -73,36 +89,21 @@
         function formatDetails(event) {
             const start = event.start;
             let end = event.end ? new Date(event.end) : new Date(start);
-            
-            // Calculate duration in hours
             const durationHours = (end - start) / (1000 * 60 * 60);
-            
-            // Logic: If explicitly allDay, OR if it lasts 24+ hours, OR if it starts/ends at midnight
-            const isFullDayRange = event.allDay || durationHours >= 24 || (start.getHours() === 0 && end.getHours() === 0);
-
+            const isFullDay = event.allDay || durationHours >= 24 || (start.getHours() === 0 && end.getHours() === 0);
             const dateFmt = { weekday: 'long', month: 'long', day: 'numeric' };
             const yearFmt = { year: 'numeric' };
 
-            if (isFullDayRange) {
+            if (isFullDay) {
                 let displayEnd = new Date(end);
-                // Adjust Google's exclusive end date (only if it's a multi-day span)
-                if (durationHours >= 24) {
-                    displayEnd.setDate(displayEnd.getDate() - 1);
-                }
-                
-                if (start.toDateString() === displayEnd.toDateString()) {
-                    return start.toLocaleDateString(undefined, {...dateFmt, ...yearFmt});
-                } else {
-                    // Monday, March 3 — Friday, March 7, 2026
-                    return start.toLocaleDateString(undefined, dateFmt) + " — " + 
-                           displayEnd.toLocaleDateString(undefined, {...dateFmt, ...yearFmt});
-                }
+                if (durationHours >= 24) displayEnd.setDate(displayEnd.getDate() - 1);
+                return (start.toDateString() === displayEnd.toDateString()) ? 
+                    start.toLocaleDateString(undefined, {...dateFmt, ...yearFmt}) : 
+                    start.toLocaleDateString(undefined, dateFmt) + " — " + displayEnd.toLocaleDateString(undefined, {...dateFmt, ...yearFmt});
             } else {
-                // Timed Event ONLY
-                const timeFmt = { hour: 'numeric', minute: '2-digit' };
                 return start.toLocaleDateString(undefined, {...dateFmt, ...yearFmt}) + "<br>" + 
-                       start.toLocaleTimeString(undefined, timeFmt) + " – " + 
-                       end.toLocaleTimeString(undefined, timeFmt);
+                       start.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'}) + " – " + 
+                       end.toLocaleTimeString([], {hour:'numeric', minute:'2-digit'});
             }
         }
 
@@ -122,7 +123,7 @@
                     info.jsEvent.preventDefault();
                     document.getElementById('mTitle').innerText = info.event.title;
                     document.getElementById('mTime').innerHTML = formatDetails(info.event);
-                    document.getElementById('mDesc').innerHTML = (info.event.extendedProps.description || "No description provided.").replace(/\n/g, "<br>");
+                    document.getElementById('mDesc').innerHTML = (info.event.extendedProps.description || "No description.").replace(/\n/g, "<br>");
                     document.getElementById('customModal').style.display = 'block';
                 }
             });
