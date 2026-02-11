@@ -2,19 +2,15 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>DAKboard 2026 - Focus Fade & Integrated Nav</title>
+    <title>DAKboard 2026 - Styled Nav & Focus Fade</title>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.15/index.global.min.js"></script>
 
     <style>
         body { margin: 0; padding: 0; font-family: sans-serif; background: #000; color: #eee; overflow-y: auto; }
         
-        /* --- FOCUS FADE LOGIC --- */
-        #calendar { 
-            max-width: 100%; 
-            padding: 0 20px 20px 20px; 
-            transition: opacity 0.4s ease; /* Smooth transition when fading */
-        }
+        /* --- FOCUS FADE --- */
+        #calendar { max-width: 100%; padding: 0 20px 20px 20px; transition: opacity 0.4s ease; }
         .is-zoomed #calendar { opacity: 0.2 !important; pointer-events: none; }
 
         /* --- STICKY YEAR TOOLBAR --- */
@@ -23,7 +19,7 @@
             padding: 15px 0; margin-bottom: 10px !important; border-bottom: 2px solid #333;
         }
 
-        /* --- YEAR VIEW FONT --- */
+        /* --- YEAR VIEW FONT (+10% BUMP) --- */
         .fc-multimonth { font-size: 1.32em !important; }
         .fc-multimonth-title { font-size: 1.5em !important; color: #fff !important; cursor: pointer !important; }
 
@@ -55,14 +51,22 @@
         .fc-multimonth .fc-daygrid-more-link { font-size: 0.85em !important; margin-top: 2px !important; }
         #zoomCalendar .fc-daygrid-more-link { font-size: 0.45em !important; padding: 1px 6px !important; margin-top: 1px !important; }
 
-        /* --- MATCHING CLOSE BUTTON --- */
-        .fc-closeBtn-button {
-            background-color: #444 !important; border-color: #444 !important; color: #fff !important;
-            font-weight: bold !important; text-transform: uppercase !important; margin-left: 10px !important;
+        /* --- "close X" STYLING (MATCHING TODAY BUTTON) --- */
+        .fc .fc-closeBtn-button {
+            background-color: #2c3e50 !important; /* FC Default Button Color */
+            border: 1px solid #2c3e50 !important;
+            color: #fff !important;
+            padding: 0.4em 0.65em !important;
+            font-size: 1em !important;
+            border-radius: 0.25em !important;
+            line-height: 1.5 !important;
+            margin-left: 0.75em !important; /* Spacing from Today */
+            text-transform: none !important; /* Allows lowercase */
+            font-weight: 400 !important;
         }
-        .fc-closeBtn-button:hover { background-color: #666 !important; border-color: #666 !important; }
+        .fc .fc-closeBtn-button:hover { background-color: #1e2b37 !important; border-color: #1e2b37 !important; }
 
-        /* --- POPOVER & ZOOM OVERLAY --- */
+        /* --- POPOVER & ZOOM --- */
         .fc-theme-standard .fc-popover { background: #1a1a1a !important; border: 3px solid #8fc7ff !important; border-radius: 15px !important; z-index: 5000 !important; }
         .fc-theme-standard .fc-popover-header { background: #333333 !important; color: #8fc7ff !important; padding: 10px !important; border-bottom: 2px solid #8fc7ff !important; border-radius: 12px 12px 0 0 !important; }
         
@@ -102,7 +106,7 @@
         
         function closeZoom() { 
             document.getElementById('zoomOverlay').style.display = 'none'; 
-            document.getElementById('mainBody').classList.remove('is-zoomed'); // RESTORE BRIGHTNESS
+            document.getElementById('mainBody').classList.remove('is-zoomed');
             document.body.style.overflow = 'auto'; 
         }
 
@@ -141,7 +145,7 @@
                     right: '' 
                 },
                 customButtons: {
-                    closeBtn: { text: 'Close X', click: function() { closeZoom(); } }
+                    closeBtn: { text: 'close X', click: function() { closeZoom(); } }
                 },
                 eventTimeFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'narrow', omitZeroMinute: false },
                 dayMaxEvents: 7,
@@ -166,7 +170,7 @@
             document.addEventListener('click', (e) => {
                 if (e.target.classList.contains('fc-multimonth-title')) {
                     document.getElementById('zoomOverlay').style.display = 'block';
-                    document.getElementById('mainBody').classList.add('is-zoomed'); // TRIGGER FADE
+                    document.getElementById('mainBody').classList.add('is-zoomed');
                     document.body.style.overflow = 'hidden';
                     if (zoomCal) zoomCal.destroy();
                     zoomCal = initCalendar(document.getElementById('zoomCalendar'), 'dayGridMonth', new Date(e.target.innerText + ", " + mainCal.view.title), true);
