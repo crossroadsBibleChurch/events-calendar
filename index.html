@@ -2,15 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>DAKboard 2026 - Optimized Left Navigation</title>
+    <title>DAKboard 2026 - Focus Fade & Integrated Nav</title>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.15/index.global.min.js"></script>
 
     <style>
         body { margin: 0; padding: 0; font-family: sans-serif; background: #000; color: #eee; overflow-y: auto; }
         
+        /* --- FOCUS FADE LOGIC --- */
+        #calendar { 
+            max-width: 100%; 
+            padding: 0 20px 20px 20px; 
+            transition: opacity 0.4s ease; /* Smooth transition when fading */
+        }
+        .is-zoomed #calendar { opacity: 0.2 !important; pointer-events: none; }
+
         /* --- STICKY YEAR TOOLBAR --- */
-        #calendar { max-width: 100%; padding: 0 20px 20px 20px; }
         .fc .fc-header-toolbar {
             position: sticky; top: 0; background: #000; z-index: 1000;
             padding: 15px 0; margin-bottom: 10px !important; border-bottom: 2px solid #333;
@@ -48,18 +55,14 @@
         .fc-multimonth .fc-daygrid-more-link { font-size: 0.85em !important; margin-top: 2px !important; }
         #zoomCalendar .fc-daygrid-more-link { font-size: 0.45em !important; padding: 1px 6px !important; margin-top: 1px !important; }
 
-        /* --- MATCHING CLOSE BUTTON STYLING --- */
+        /* --- MATCHING CLOSE BUTTON --- */
         .fc-closeBtn-button {
-            background-color: #444 !important;
-            border-color: #444 !important;
-            color: #fff !important;
-            font-weight: bold !important;
-            text-transform: uppercase !important;
-            margin-left: 10px !important; /* Spacing from Today button */
+            background-color: #444 !important; border-color: #444 !important; color: #fff !important;
+            font-weight: bold !important; text-transform: uppercase !important; margin-left: 10px !important;
         }
         .fc-closeBtn-button:hover { background-color: #666 !important; border-color: #666 !important; }
 
-        /* --- POPOVER & ZOOM --- */
+        /* --- POPOVER & ZOOM OVERLAY --- */
         .fc-theme-standard .fc-popover { background: #1a1a1a !important; border: 3px solid #8fc7ff !important; border-radius: 15px !important; z-index: 5000 !important; }
         .fc-theme-standard .fc-popover-header { background: #333333 !important; color: #8fc7ff !important; padding: 10px !important; border-bottom: 2px solid #8fc7ff !important; border-radius: 12px 12px 0 0 !important; }
         
@@ -77,7 +80,7 @@
         }
     </style>
 </head>
-<body>
+<body id="mainBody">
     <div id="calendar"></div>
     <div id="zoomOverlay" class="zoom-container">
         <div id="zoomCalendar"></div>
@@ -96,7 +99,12 @@
         var CAL_ID = 'eventsatcrossroads@gmail.com';
 
         function closeModal() { document.getElementById('customModal').style.display = 'none'; }
-        function closeZoom() { document.getElementById('zoomOverlay').style.display = 'none'; document.body.style.overflow = 'auto'; }
+        
+        function closeZoom() { 
+            document.getElementById('zoomOverlay').style.display = 'none'; 
+            document.getElementById('mainBody').classList.remove('is-zoomed'); // RESTORE BRIGHTNESS
+            document.body.style.overflow = 'auto'; 
+        }
 
         function formatDetails(event) {
             const start = event.start;
@@ -133,10 +141,7 @@
                     right: '' 
                 },
                 customButtons: {
-                    closeBtn: {
-                        text: 'Close X',
-                        click: function() { closeZoom(); }
-                    }
+                    closeBtn: { text: 'Close X', click: function() { closeZoom(); } }
                 },
                 eventTimeFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'narrow', omitZeroMinute: false },
                 dayMaxEvents: 7,
@@ -161,6 +166,7 @@
             document.addEventListener('click', (e) => {
                 if (e.target.classList.contains('fc-multimonth-title')) {
                     document.getElementById('zoomOverlay').style.display = 'block';
+                    document.getElementById('mainBody').classList.add('is-zoomed'); // TRIGGER FADE
                     document.body.style.overflow = 'hidden';
                     if (zoomCal) zoomCal.destroy();
                     zoomCal = initCalendar(document.getElementById('zoomCalendar'), 'dayGridMonth', new Date(e.target.innerText + ", " + mainCal.view.title), true);
