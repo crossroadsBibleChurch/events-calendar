@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>DAKboard 2026 - Hybrid Shading Fix</title>
+    <title>DAKboard 2026 - Sorted & Shaded</title>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.15/index.global.min.js"></script>
 
@@ -21,8 +21,6 @@
         /* --- UI STYLING --- */
         .fc-multimonth { font-size: 1.32em !important; }
         .fc-multimonth-title { font-size: 1.5em !important; color: #fff !important; cursor: pointer !important; }
-
-        /* --- THE SHADING BASE --- */
         .fc-daygrid-day { border: 1px solid #333 !important; }
 
         /* --- NAVIGATION BUTTONS --- */
@@ -63,7 +61,6 @@
 <body id="mainBody">
     <div id="calendar"></div>
     <div id="zoomOverlay" class="zoom-container"><div id="zoomCalendar"></div></div>
-    
     <div id="customModal">
         <div id="mTitle" style="color:#8fc7ff; font-size: 3.5em; font-weight: bold;"></div>
         <div id="mTime" style="color:#fff; font-size: 2.2em; margin: 25px 0; border-bottom: 2px solid #333; padding-bottom: 15px;"></div>
@@ -98,28 +95,30 @@
             return (sameDay ? start.toLocaleDateString(undefined, dateFmt) : start.toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'}) + " – " + displayEnd.toLocaleDateString(undefined, dateFmt)) + "<br>" + timeStr;
         }
 
-        // --- NEW CENTRALIZED SHADING LOGIC ---
         function applyShading(el, argDate, cellEl) {
             const parentMonthBlock = cellEl.closest('.fc-multimonth-month');
             let isOtherMonth = false;
-
             if (parentMonthBlock) {
-                // Year View Logic: Check if cell month matches the block title
                 const titleText = parentMonthBlock.querySelector('.fc-multimonth-title').innerText;
                 const cellMonthName = argDate.toLocaleString('default', { month: 'long' });
                 isOtherMonth = (cellMonthName !== titleText);
             } else {
-                // Month View Logic: Check the standard class
                 isOtherMonth = cellEl.classList.contains('fc-day-other');
             }
-
             cellEl.style.setProperty('background-color', isOtherMonth ? '#000000' : '#1a1a1a', 'important');
         }
 
         function initCalendar(el, view, date, isZoom) {
             return new FullCalendar.Calendar(el, {
                 googleCalendarApiKey: API_KEY,
-                eventSources: [{ googleCalendarId: CAL_ID }],
+                eventSources: [{ 
+                    googleCalendarId: CAL_ID,
+                    eventDataTransform: (e) => {
+                        const d = (new Date(e.end) - new Date(e.start)) / 36e5;
+                        if (d >= 24) e.allDay = true;
+                        return e;
+                    }
+                }],
                 initialView: view,
                 initialDate: date || new Date(),
                 multiMonthMaxColumns: 3,
@@ -130,6 +129,10 @@
                 buttonText: { today: isZoom ? 'current month' : 'this year' },
                 customButtons: { closeBtn: { text: 'close', click: function() { closeZoom(); } } },
                 eventTimeFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'narrow', omitZeroMinute: false },
+                
+                // --- SORTING ENGINE ---
+                eventOrder: "-allDay,start",
+                eventOrderStrict: true,
                 dayMaxEvents: 7,
                 height: isZoom ? '100%' : 'auto',
                 expandRows: isZoom,
@@ -138,12 +141,11 @@
                     applyShading(el, info.date, info.el);
                 },
                 datesSet: function() {
-                    // Re-apply to all visible cells after any view change/navigation
                     const cells = el.querySelectorAll('.fc-daygrid-day');
                     cells.forEach(cell => {
                         const dateAttr = cell.getAttribute('data-date');
                         if (dateAttr) {
-                            const d = new Date(dateAttr + 'T12:00:00'); // Use noon to avoid TZ shifts
+                            const d = new Date(dateAttr + 'T12:00:00');
                             applyShading(el, d, cell);
                         }
                     });
