@@ -2,14 +2,13 @@
 <html lang="en">
 <head>
     <meta charset="utf-8" />
-    <title>DAKboard 2026 - Custom Button Layout</title>
+    <title>DAKboard 2026 - Hybrid Shading Fix</title>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@fullcalendar/google-calendar@6.1.15/index.global.min.js"></script>
 
     <style>
         body { margin: 0; padding: 0; font-family: sans-serif; background: #000; color: #eee; overflow-y: auto; }
         
-        /* --- FOCUS FADE --- */
         #calendar { max-width: 100%; padding: 0 20px 20px 20px; transition: opacity 0.4s ease; }
         .is-zoomed #calendar { opacity: 0.2 !important; pointer-events: none; }
 
@@ -19,31 +18,20 @@
             padding: 15px 0; margin-bottom: 10px !important; border-bottom: 2px solid #333;
         }
 
-        /* --- YEAR VIEW FONT --- */
+        /* --- UI STYLING --- */
         .fc-multimonth { font-size: 1.32em !important; }
         .fc-multimonth-title { font-size: 1.5em !important; color: #fff !important; cursor: pointer !important; }
 
-        /* --- THE SHADING --- */
-        .fc-daygrid-day { background-color: #1a1a1a !important; border: 1px solid #333 !important; }
-        .fc .fc-day-other { background-color: #000000 !important; }
+        /* --- THE SHADING BASE --- */
+        .fc-daygrid-day { border: 1px solid #333 !important; }
 
         /* --- NAVIGATION BUTTONS --- */
         .fc .fc-button-primary { text-transform: lowercase !important; font-weight: 400 !important; }
-        
-        /* Custom Close Button Styling */
         .fc .fc-closeBtn-button {
-            background-color: #2c3e50 !important;
-            border: 1px solid #2c3e50 !important;
-            color: #fff !important;
-            padding: 0.4em 0.8em !important;
-            font-size: 1em !important;
-            border-radius: 0.25em !important;
-            line-height: 1.5 !important;
-            margin-left: 1.2em !important; /* Visual gap from nav cluster */
-            text-transform: lowercase !important;
-            font-weight: 400 !important;
+            background-color: #2c3e50 !important; border: 1px solid #2c3e50 !important; color: #fff !important;
+            padding: 0.4em 0.8em !important; font-size: 1em !important; border-radius: 0.25em !important;
+            margin-left: 1.2em !important; text-transform: lowercase !important;
         }
-        .fc .fc-closeBtn-button:hover { background-color: #1e2b37 !important; border-color: #1e2b37 !important; }
 
         /* --- EVENT ENGINE --- */
         .fc-daygrid-event-dot { display: none !important; } 
@@ -55,7 +43,7 @@
         .fc-event-title { color: #8fc7ff !important; font-weight: bold !important; font-size: 0.85em !important; }
         .fc-event-time { color: #dcdcdc !important; font-weight: 700 !important; font-size: 0.75em !important; margin-right: 4px !important; }
 
-        /* --- POPOVER & ZOOM --- */
+        /* --- ZOOM OVERLAY --- */
         .zoom-container { 
             display: none; position: fixed; background: rgba(0,0,0,0.98); z-index: 2000; 
             left: 50%; top: 50%; transform: translate(-50%, -50%);
@@ -74,9 +62,7 @@
 </head>
 <body id="mainBody">
     <div id="calendar"></div>
-    <div id="zoomOverlay" class="zoom-container">
-        <div id="zoomCalendar"></div>
-    </div>
+    <div id="zoomOverlay" class="zoom-container"><div id="zoomCalendar"></div></div>
     
     <div id="customModal">
         <div id="mTitle" style="color:#8fc7ff; font-size: 3.5em; font-weight: bold;"></div>
@@ -91,7 +77,6 @@
         var CAL_ID = 'eventsatcrossroads@gmail.com';
 
         function closeModal() { document.getElementById('customModal').style.display = 'none'; }
-        
         function closeZoom() { 
             document.getElementById('zoomOverlay').style.display = 'none'; 
             document.getElementById('mainBody').classList.remove('is-zoomed');
@@ -113,43 +98,55 @@
             return (sameDay ? start.toLocaleDateString(undefined, dateFmt) : start.toLocaleDateString(undefined, {weekday:'long', month:'long', day:'numeric'}) + " – " + displayEnd.toLocaleDateString(undefined, dateFmt)) + "<br>" + timeStr;
         }
 
+        // --- NEW CENTRALIZED SHADING LOGIC ---
+        function applyShading(el, argDate, cellEl) {
+            const parentMonthBlock = cellEl.closest('.fc-multimonth-month');
+            let isOtherMonth = false;
+
+            if (parentMonthBlock) {
+                // Year View Logic: Check if cell month matches the block title
+                const titleText = parentMonthBlock.querySelector('.fc-multimonth-title').innerText;
+                const cellMonthName = argDate.toLocaleString('default', { month: 'long' });
+                isOtherMonth = (cellMonthName !== titleText);
+            } else {
+                // Month View Logic: Check the standard class
+                isOtherMonth = cellEl.classList.contains('fc-day-other');
+            }
+
+            cellEl.style.setProperty('background-color', isOtherMonth ? '#000000' : '#1a1a1a', 'important');
+        }
+
         function initCalendar(el, view, date, isZoom) {
             return new FullCalendar.Calendar(el, {
                 googleCalendarApiKey: API_KEY,
-                eventSources: [{ 
-                    googleCalendarId: CAL_ID,
-                    eventDataTransform: (e) => {
-                        const d = (new Date(e.end) - new Date(e.start)) / 36e5;
-                        if (d >= 24) e.allDay = true;
-                        return e;
-                    }
-                }],
+                eventSources: [{ googleCalendarId: CAL_ID }],
                 initialView: view,
                 initialDate: date || new Date(),
                 multiMonthMaxColumns: 3,
                 headerToolbar: { 
-                    // Move today button between prev/next
                     left: isZoom ? 'prev today next closeBtn' : 'prev today next', 
-                    center: 'title', 
-                    right: '' 
+                    center: 'title', right: '' 
                 },
-                buttonText: {
-                    today: isZoom ? 'current month' : 'this year'
-                },
-                customButtons: {
-                    closeBtn: { text: 'close', click: function() { closeZoom(); } }
-                },
+                buttonText: { today: isZoom ? 'current month' : 'this year' },
+                customButtons: { closeBtn: { text: 'close', click: function() { closeZoom(); } } },
                 eventTimeFormat: { hour: 'numeric', minute: '2-digit', meridiem: 'narrow', omitZeroMinute: false },
                 dayMaxEvents: 7,
-                eventOrder: "-allDay,start",
-                eventOrderStrict: true,
                 height: isZoom ? '100%' : 'auto',
-                contentHeight: isZoom ? '100%' : 'auto',
                 expandRows: isZoom,
+
                 dayCellDidMount: function(info) {
-                    if (info.isOther) {
-                        info.el.style.setProperty('background-color', '#000000', 'important');
-                    }
+                    applyShading(el, info.date, info.el);
+                },
+                datesSet: function() {
+                    // Re-apply to all visible cells after any view change/navigation
+                    const cells = el.querySelectorAll('.fc-daygrid-day');
+                    cells.forEach(cell => {
+                        const dateAttr = cell.getAttribute('data-date');
+                        if (dateAttr) {
+                            const d = new Date(dateAttr + 'T12:00:00'); // Use noon to avoid TZ shifts
+                            applyShading(el, d, cell);
+                        }
+                    });
                 },
                 eventClick: function(info) {
                     info.jsEvent.preventDefault();
